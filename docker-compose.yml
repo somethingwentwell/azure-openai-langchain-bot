@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  test-lc-api:
+    image: warching/langchain-agent-api
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    volumes:
+      - ./markdowns:/app/markdowns
+    networks:
+      - langchain-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  openai-teams-bot:
+    image: warching/openai-teams-bot:langchain
+    ports:
+      - "3978:3978"
+    env_file:
+      - .env
+    networks:
+      - langchain-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  langchain-network:

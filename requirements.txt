@@ -1,0 +1,11 @@
+fastapi
+pydantic
+langchain
+python-dotenv
+openai
+markdown
+uvicorn
+uvloop
+bs4
+unstructured
+chromadb
