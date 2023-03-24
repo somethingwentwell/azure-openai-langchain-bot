@@ -45,6 +45,11 @@ Make sure to keep the `.env` file private and do not commit it to version contro
 
 ## Usage
 
+0. Docker-compose with latest image:
+```
+docker-compose up
+```
+
 1. Start the bot by running the following command:
 ```
 uvicorn main:app --reload
