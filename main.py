@@ -4,7 +4,7 @@ from langchain import LLMChain
 from langchain.llms import AzureOpenAI
 from langchain.agents import initialize_agent, ZeroShotAgent, Tool, AgentExecutor
 from langchain.memory import ConversationBufferMemory
-from docsimport import importedMarkdownTools
+from docsimport import importedMarkdownTools, importedUrlTools, importedPdfTools
 from dotenv import load_dotenv
 import os
 
@@ -47,8 +47,9 @@ tools = [
     )
 ]
 
-tools.extend(importedMarkdownTools("GitLab CI docs", azllm))
-
+# tools.extend(importedMarkdownTools(os.getenv("TOOLS_CATEGORY"), azllm))
+# tools.extend(importedUrlTools(os.getenv("TOOLS_CATEGORY"), azllm))
+tools.extend(importedPdfTools(os.getenv("TOOLS_CATEGORY"), azllm))
 
 # loop tools descriptions
 print("-----TOOLS-----")
