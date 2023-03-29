@@ -4,7 +4,7 @@ from langchain import LLMChain
 from langchain.llms import AzureOpenAI
 from langchain.agents import initialize_agent, ZeroShotAgent, Tool, AgentExecutor
 from langchain.memory import ConversationBufferMemory
-from docsimport import importedMarkdownTools, importedUrlTools, importedPdfTools
+from docsimport import importedMarkdownTools, importedUrlTools, importedPdfTools, importedTxtTools
 from dotenv import load_dotenv
 import os
 
@@ -13,7 +13,7 @@ load_dotenv()
 def SetupAgent(id):
     prefix = f"""{os.getenv("PROMPT_PREFIX")}
     You have access to the following tools:"""
-    suffix = """Begin!"
+    suffix = """Again, If the user ask you in Chinese, you MUST reply in Chinese. Begin!"
 
     {chat_history}
     Question: {input}
@@ -47,8 +47,9 @@ tools = [
     )
 ]
 
-# tools.extend(importedMarkdownTools(os.getenv("TOOLS_CATEGORY"), azllm))
-# tools.extend(importedUrlTools(os.getenv("TOOLS_CATEGORY"), azllm))
+tools.extend(importedMarkdownTools(os.getenv("TOOLS_CATEGORY"), azllm))
+tools.extend(importedUrlTools(os.getenv("TOOLS_CATEGORY"), azllm))
+tools.extend(importedTxtTools(os.getenv("TOOLS_CATEGORY"), azllm))
 tools.extend(importedPdfTools(os.getenv("TOOLS_CATEGORY"), azllm))
 
 # loop tools descriptions

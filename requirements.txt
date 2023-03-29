@@ -9,4 +9,3 @@ uvloop
 bs4
 unstructured
 chromadb
-pymupdf
