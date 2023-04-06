@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the necessary files into the container at /app
 COPY main.py /app
 COPY docsimport.py /app
+COPY customtools.py /app
 
 # Expose port 80 for the API server
 EXPOSE 80

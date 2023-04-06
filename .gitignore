@@ -1,5 +1,13 @@
 # Custom
 .chroma/
+testnb.ipynb
+testnb.ipynb_checkpoints
+customtools.py
+csvs/
+urls/
+htmls/
+txts/
+pdfs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

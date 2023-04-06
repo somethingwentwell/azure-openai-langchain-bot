@@ -1,8 +1,9 @@
 import os
 import fnmatch
-from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredURLLoader, UnstructuredPDFLoader, TextLoader
+from langchain.document_loaders import UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredURLLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
 from langchain.vectorstores import Chroma
-from langchain import VectorDBQA
+# from langchain import VectorDBQA
+from langchain.chains import RetrievalQA
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.agents import Tool
@@ -24,7 +25,8 @@ def importedMarkdownTools(name, llm):
             print(filenames)
             doc_texts = text_splitter.split_documents(data)
             doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="mddocs")
-            doc = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
@@ -45,7 +47,28 @@ def importedUrlTools(name, llm):
                 data += loader.load()
             doc_texts = text_splitter.split_documents(data)
             doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="urldocs")
-            doc = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
+            tools.append(Tool(
+                name = name + ": " + os.path.basename(root),
+                func=doc.run,
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+            ))
+    return tools
+
+def importedHtmlTools(name, llm):
+    tools = []
+    for root, dirnames, filenames in os.walk('./htmls'):
+        if (os.path.basename(root) != "htmls"):
+            data = []
+            for filename in fnmatch.filter(filenames, '*.html'):
+                loader = UnstructuredHTMLLoader(os.path.join(root, filename))
+                data += loader.load()
+            print(filenames)
+            doc_texts = text_splitter.split_documents(data)
+            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="htmldocs")
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
@@ -64,7 +87,8 @@ def importedPdfTools(name, llm):
             print(filenames)
             doc_texts = text_splitter.split_documents(data)
             doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="pdfdocs")
-            doc = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
@@ -82,10 +106,60 @@ def importedTxtTools(name, llm):
                 data += loader.load()
             doc_texts = text_splitter.split_documents(data)
             doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="txtdocs")
-            doc = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
             tools.append(Tool(
                 name = name + " " + os.path.basename(root),
                 func=doc.run,
                 description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
             ))
+    return tools
+
+def importedTxtTools(name, llm):
+    tools = []
+    for root, dirnames, filenames in os.walk('./txts'):
+        if (os.path.basename(root) != "txts"):
+            data = []
+            for filename in fnmatch.filter(filenames, '*.txt'):
+                loader = TextLoader(os.path.join(root, filename))
+                data += loader.load()
+            doc_texts = text_splitter.split_documents(data)
+            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="txtdocs")
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
+            tools.append(Tool(
+                name = name + " " + os.path.basename(root),
+                func=doc.run,
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+            ))
+    return tools
+
+
+def importedCsvTools(name, llm):
+    tools = []
+    for root, dirnames, filenames in os.walk('./csvs'):
+        if (os.path.basename(root) != "csvs"):
+            data = []
+            for filename in fnmatch.filter(filenames, '*.csv'):
+                loader = CSVLoader(os.path.join(root, filename))
+                data += loader.load()
+            doc_texts = text_splitter.split_documents(data)
+            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="csvdocs")
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
+            tools.append(Tool(
+                name = name + " " + os.path.basename(root),
+                func=doc.run,
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+            ))
+    return tools
+
+def allImportedTools(name, llm):
+    tools = []
+    tools.extend(importedCsvTools(name, llm))
+    tools.extend(importedTxtTools(name, llm))
+    tools.extend(importedPdfTools(name, llm))
+    tools.extend(importedUrlTools(name, llm))
+    tools.extend(importedHtmlTools(name, llm))
+    tools.extend(importedMarkdownTools(name, llm))
     return tools

@@ -1,18 +1,23 @@
 version: "3.9"
 services:
   test-lc-api:
-    image: warching/langchain-agent-api
+    # image: warching/langchain-agent-api
+    image: langchain-agent-api:ylmass
     ports:
       - "8000:80"
     env_file:
       - .env
     volumes:
-      - ./markdowns:/app/markdowns
+      # - ./markdowns:/app/markdowns
+      - ./htmls:/app/htmls
+      - ./csvs:/app/csvs
     networks:
       - langchain-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
   openai-teams-bot:
+    environment:
+      - DOCKER_DEFAULT_PLATFORM=linux/amd64
     image: warching/openai-teams-bot:langchain
     ports:
       - "3978:3978"
