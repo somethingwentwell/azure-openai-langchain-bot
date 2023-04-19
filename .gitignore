@@ -1,13 +1,20 @@
 # Custom
+.DS_Store
 .chroma/
 testnb.ipynb
 testnb.ipynb_checkpoints
-customtools.py
 csvs/
 urls/
 htmls/
 txts/
 pdfs/
+markdowns/
+_csvs/
+_urls/
+_htmls/
+_txts/
+_pdfs/
+_markdowns/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

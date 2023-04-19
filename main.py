@@ -2,9 +2,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain import LLMChain
 from langchain.llms import AzureOpenAI
-from langchain.agents import initialize_agent, ZeroShotAgent, Tool, AgentExecutor
+from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 from langchain.memory import ConversationBufferMemory
-from docsimport import allImportedTools, importedHtmlTools, importedMarkdownTools, importedUrlTools, importedPdfTools, importedTxtTools, importedCsvTools
+from docsimport import allImportedTools
+from customtools import allCustomTools
 from dotenv import load_dotenv
 import os
 
@@ -48,6 +49,7 @@ tools = [
 ]
 
 tools.extend(allImportedTools(os.getenv("TOOLS_CATEGORY"), azllm))
+tools.extend(allCustomTools())
 
 # loop tools descriptions
 print("-----TOOLS-----")

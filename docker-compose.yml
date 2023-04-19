@@ -1,16 +1,13 @@
 version: "3.9"
 services:
   test-lc-api:
-    # image: warching/langchain-agent-api
-    image: langchain-agent-api:ylmass
+    image: warching/langchain-agent-api
     ports:
       - "8000:80"
     env_file:
       - .env
     volumes:
-      # - ./markdowns:/app/markdowns
       - ./htmls:/app/htmls
-      - ./csvs:/app/csvs
     networks:
       - langchain-network
     extra_hosts:
