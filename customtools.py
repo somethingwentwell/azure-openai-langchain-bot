@@ -1,20 +1,7 @@
 import os
 import openai
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
 from langchain.agents import Tool
 from dotenv import load_dotenv
-from langchain.llms import AzureOpenAI
-from langchain.agents import create_csv_agent
-from langchain.chat_models import AzureChatOpenAI
-from langchain.schema import HumanMessage
-from langchain import PromptTemplate, LLMChain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
 
 load_dotenv()
 

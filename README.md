@@ -22,7 +22,7 @@ pip install --no-cache-dir -r requirements.txt
 3. Set up the environment variables in a `.env` file. You can copy the `.env.example` file and rename it to `.env`, then replace the placeholders with your own API key and bot token.
 
 ```
-MicrosoftAppType=
+MicrosoftAppType=MultiTenant
 MicrosoftAppId=
 MicrosoftAppPassword=
 MicrosoftAppTenantId=
@@ -36,9 +36,17 @@ COMPLETION_DEPLOYMENT_NAME=text-davinci-003
 COMPLETION_MODEL_NAME=text-davinci-003
 EMBEDDING_DEPLOYMENT_NAME=text-embedding-ada-002
 
-PROMPT_PREFIX='Have a conversation with a human, answering the following questions as best you can.'
+CHAT_DEPLOYMENT_NAME=gpt-35-turbo
+CHAT_MODEL_NAME=gpt-35-turbo
+CHAT_SYSTEM_PROMPT=
+
+PROMPT_PREFIX=
+PROMPT_SUFFIX=
+TOOLS_CATEGORY=
 
 LC_API_URL=http://host.docker.internal:8000/run
+
+
 ```
 
 Make sure to keep the `.env` file private and do not commit it to version control.

@@ -1,0 +1,11 @@
+Packages and Registries ALL TIERS
+The GitLab Package Registry acts as a private or public registry for a variety of common package managers. You can publish and share packages, which can be easily consumed as a dependency in downstream projects.
+
+Container Registry
+The GitLab Container Registry is a secure and private registry for container images. It’s built on open source software and completely integrated within GitLab. Use GitLab CI/CD to create and publish images. Use the GitLab API to manage the registry across groups and projects.
+
+Terraform Module Registry
+The GitLab Terraform Module Registry is a secure and private registry for Terraform modules. You can use GitLab CI/CD to create and publish modules.
+
+Dependency Proxy
+The Dependency Proxy is a local proxy for frequently-used upstream images and packages.

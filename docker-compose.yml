@@ -4,10 +4,20 @@ services:
     image: warching/langchain-agent-api
     ports:
       - "8000:80"
+    # command:
+    #   - /bin/sh
+    #   - -c
+    #   - |
+    #       sleep 3600
     env_file:
       - .env
     volumes:
+      - ./markdowns:/app/markdowns
+      - ./urls:/app/urls
       - ./htmls:/app/htmls
+      - ./pdfs:/app/pdfs
+      - ./txts:/app/txts
+      - ./csvs:/app/csvs
     networks:
       - langchain-network
     extra_hosts:

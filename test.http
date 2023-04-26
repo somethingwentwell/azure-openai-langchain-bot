@@ -1,0 +1,63 @@
+### Test CSV Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "Any existing vulnerabilities",
+    "id": "1"
+}
+
+### Test HTML Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "How to do MR in GitLab?",
+    "id": "1"
+}
+
+### Test Markdown Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "How to config pipeline in GitLab?",
+    "id": "1"
+}
+
+### Test PDF Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "How to use GitLab share runner?",
+    "id": "1"
+}
+
+### Test Txt Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "Do GitLab has container registry?",
+    "id": "1"
+}
+
+### Test URL Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "How to add file to GitLab repo?",
+    "id": "1"
+}
+
+### Test Custom ChatGPT Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "What makes GitLab better than GitHub?",
+    "id": "1"
+}
+

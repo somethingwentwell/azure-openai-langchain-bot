@@ -9,3 +9,5 @@ uvloop
 bs4
 unstructured
 chromadb
+tiktoken
+pdfminer-six
