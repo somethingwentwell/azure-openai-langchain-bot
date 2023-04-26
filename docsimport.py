@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-embeddings = OpenAIEmbeddings(document_model_name=os.getenv("EMBEDDING_DEPLOYMENT_NAME"), chunk_size=1)
+embeddings = OpenAIEmbeddings(model=os.getenv("EMBEDDING_DEPLOYMENT_NAME"), chunk_size=1)
 text_splitter = CharacterTextSplitter(chunk_size=600, chunk_overlap=0)
 
 def importedMarkdownTools(name, llm):
@@ -107,26 +107,7 @@ def importedTxtTools(name, llm):
             doc_texts = text_splitter.split_documents(data)
             doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="txtdocs")
             # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
-            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
-            tools.append(Tool(
-                name = name + " " + os.path.basename(root),
-                func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
-            ))
-    return tools
-
-def importedTxtTools(name, llm):
-    tools = []
-    for root, dirnames, filenames in os.walk('./txts'):
-        if (os.path.basename(root) != "txts"):
-            data = []
-            for filename in fnmatch.filter(filenames, '*.txt'):
-                loader = TextLoader(os.path.join(root, filename))
-                data += loader.load()
-            doc_texts = text_splitter.split_documents(data)
-            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="txtdocs")
-            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
-            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever())
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever(search_kwargs={"k": 1}))
             tools.append(Tool(
                 name = name + " " + os.path.basename(root),
                 func=doc.run,

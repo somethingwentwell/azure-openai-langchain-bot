@@ -1,22 +1,12 @@
 import os
 import openai
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
 from langchain.agents import Tool
 from dotenv import load_dotenv
 from langchain.llms import AzureOpenAI
 from langchain.agents import create_csv_agent
-from langchain.chat_models import AzureChatOpenAI
-from langchain.schema import HumanMessage
-from langchain import PromptTemplate, LLMChain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
 
 load_dotenv()
+azllm=AzureOpenAI(deployment_name=os.getenv("COMPLETION_DEPLOYMENT_NAME"), model_name=os.getenv("COMPLETION_MODEL_NAME"), temperature=0)
 
 def custChatGPT(input):
     openai.api_type = "azure"
@@ -47,7 +37,25 @@ def CustChatGPTTool():
     ))
     return tools
 
+def libraryCsvTool():
+    tools = []
+    tools.append(Tool(
+        name = "Book Searching Agent",
+        func=csvAgent,
+        description=f"useful for when you need to answer questions about the books in Library. Input should be a question in complete sentence."
+    ))
+    return tools
+
+
+def csvAgent(input):
+    agent = create_csv_agent(azllm, 'bookcsv/books.csv', verbose=True)
+    preprompt = os.getenv("CSV_AGENT_PREPROMPT")
+    response = agent.run(preprompt + input)
+    return response
+
+
 def allCustomTools():
     tools = []
+    tools.extend(libraryCsvTool())
     tools.extend(CustChatGPTTool())
     return tools

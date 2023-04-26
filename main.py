@@ -49,7 +49,7 @@ tools = [
 ]
 
 tools.extend(allImportedTools(os.getenv("TOOLS_CATEGORY"), azllm))
-tools.extend(allCustomTools())
+# tools.extend(allCustomTools())
 
 # loop tools descriptions
 print("-----TOOLS-----")
@@ -74,8 +74,14 @@ app = FastAPI()
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupAgent(msg.id)
-    result = MessageRes(result=agent_chains[msg.id].run(input=msg.text))
-
+    try:
+        response = agent_chains[msg.id].run(input=msg.text)
+    except ValueError as e:
+        response = str(e)
+        if not response.startswith("Could not parse LLM output: `"):
+            raise e
+        response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+    result = MessageRes(result=response)
     return result
 
 

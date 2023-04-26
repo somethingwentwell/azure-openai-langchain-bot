@@ -1,13 +1,14 @@
-version: "3.9"
+version: "3"
 services:
   test-lc-api:
-    image: warching/langchain-agent-api
+    # image: warching/langchain-agent-api
+    image: warching/langchain-agent-api:ylmass0.3
     ports:
       - "8000:80"
     env_file:
       - .env
     volumes:
-      - ./htmls:/app/htmls
+      - ./txts:/app/txts
     networks:
       - langchain-network
     extra_hosts:
