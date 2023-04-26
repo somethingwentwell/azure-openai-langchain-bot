@@ -1,0 +1,56 @@
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "What is MyDrive?",
+    "id": "1"
+}
+
+### Test HTML Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "高中學生 (中四至中六級學生) 每次最多可以借閱多少本圖書？",
+    "id": "1"
+}
+
+### Test HTML Tool 2
+
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "每次可以續借多久？",
+    "id": "1"
+}
+
+
+### Test CSV Tool
+
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "C00214的出版時間是？",
+    "id": "2"
+}
+
+### Test CSV Tool 2
+
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "Any Harry Potter books?",
+    "id": "3"
+}
+
+### Test Custom ChatGPT Tool
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "最近將軍澳的圖書館在哪？",
+    "id": "4"
+}
