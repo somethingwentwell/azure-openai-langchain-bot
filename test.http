@@ -98,10 +98,10 @@ content-type: application/json
 }
 
 ### Custom Test
-POST http://127.0.0.1:8000/run
+POST http://localhost:8000/run
 content-type: application/json
 
 {
-    "text": "Answer in English",
-    "id": "ada"
+    "text": "如果製作蛋糕？",
+    "id": "cat"
 }
