@@ -12,12 +12,13 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the necessary files into the container at /app
-COPY main.py /app
-COPY docsimport.py /app
-COPY customtools.py /app
+# COPY main.py /app
+# COPY docsimport.py /app
+# COPY customtools.py /app
 
 # Expose port 80 for the API server
 EXPOSE 80
 
 # Run the command to start the API server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["sh", "-c", "tail -f /dev/null"]

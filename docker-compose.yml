@@ -1,14 +1,29 @@
 version: "3.9"
 services:
-  test-lc-api:
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - langchain-network
+    depends_on:
+      - lc-api
+  lc-api:
     image: warching/langchain-agent-api
     ports:
-      - "8000:80"
+      - "8000-8002:80"
     # command:
     #   - /bin/sh
     #   - -c
     #   - |
     #       sleep 3600
+    command:
+      - /bin/bash
+      - -c
+      - |
+          uvicorn main:app --reload --host 0.0.0.0 --port 80
     env_file:
       - .env
     volumes:
@@ -18,10 +33,16 @@ services:
       - ./pdfs:/app/pdfs
       - ./txts:/app/txts
       - ./csvs:/app/csvs
+      - ./bookcsv:/app/bookcsv
+      - ./main.py:/app/main.py
+      - ./docsimport.py:/app/docsimport.py
+      - ./customtools.py:/app/customtools.py
     networks:
       - langchain-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    deploy:
+      replicas: 3
   openai-teams-bot:
     environment:
       - DOCKER_DEFAULT_PLATFORM=linux/amd64
