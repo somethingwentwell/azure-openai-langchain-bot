@@ -43,21 +43,65 @@ content-type: application/json
     "id": "1"
 }
 
-### Test URL Tool
+### Custom Test
 POST http://127.0.0.1:8000/run
 content-type: application/json
 
 {
-    "text": "How to add file to GitLab repo?",
-    "id": "1"
+    "text": "你好我是Ada",
+    "id": "ada"
 }
 
-### Test Custom ChatGPT Tool
+### Custom Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "有沒有科學的書推薦？",
+    "id": "ada"
+}
+
+### Custom Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "那有沒有哈利波特？",
+    "id": "ada"
+}
+
+### Custom Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "我之前問過什麼書？",
+    "id": "ada"
+}
+
+### Custom Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "我叫什麼名字？",
+    "id": "ada"
+}
+
+### Custom Test
 POST http://127.0.0.1:8000/run
 content-type: application/json
 
 {
     "text": "What makes GitLab better than GitHub?",
-    "id": "1"
+    "id": "ada"
 }
 
+### Custom Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "Answer in English",
+    "id": "ada"
+}
