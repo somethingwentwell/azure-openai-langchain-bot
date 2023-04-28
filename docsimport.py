@@ -7,11 +7,15 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.agents import Tool
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
 embeddings = OpenAIEmbeddings(model=os.getenv("EMBEDDING_DEPLOYMENT_NAME"), chunk_size=1)
 text_splitter = CharacterTextSplitter(chunk_size=600, chunk_overlap=0)
+
+class DocsInput(BaseModel):
+    question: str = Field()
 
 def importedMarkdownTools(name, llm):
     tools = []
@@ -29,29 +33,8 @@ def importedMarkdownTools(name, llm):
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
-            ))
-    return tools
-
-def importedUrlTools(name, llm):
-    tools = []
-    for root, dirnames, filenames in os.walk('./urls'):
-        if (os.path.basename(root) != "urls"):
-            data = []
-            for filename in fnmatch.filter(filenames, '*.txt'):
-                with open(os.path.join(root, filename)) as file:
-                    urls = [line.strip() for line in file]
-                print(urls)
-                loader = UnstructuredURLLoader(urls=urls)
-                data += loader.load()
-            doc_texts = text_splitter.split_documents(data)
-            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="urldocs")
-            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
-            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever(search_kwargs={"k": 1}))
-            tools.append(Tool(
-                name = name + ": " + os.path.basename(root),
-                func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question.",
+                args_schema=DocsInput
             ))
     return tools
 
@@ -71,7 +54,8 @@ def importedHtmlTools(name, llm):
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question.",
+                args_schema=DocsInput
             ))
     return tools
 
@@ -91,7 +75,8 @@ def importedPdfTools(name, llm):
             tools.append(Tool(
                 name = name + ": " + os.path.basename(root),
                 func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question.",
+                args_schema=DocsInput
             ))
     return tools
 
@@ -110,7 +95,8 @@ def importedTxtTools(name, llm):
             tools.append(Tool(
                 name = name + " " + os.path.basename(root),
                 func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question.",
+                args_schema=DocsInput
             ))
     return tools
 
@@ -129,7 +115,8 @@ def importedCsvTools(name, llm):
             tools.append(Tool(
                 name = name + " " + os.path.basename(root),
                 func=doc.run,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question."
+                description=f"useful for when you need to answer questions about {os.path.basename(root)} in {name}. Input should be a fully formed question.",
+                args_schema=DocsInput
             ))
     return tools
 
@@ -138,7 +125,6 @@ def allImportedTools(name, llm):
     tools.extend(importedCsvTools(name, llm))
     tools.extend(importedTxtTools(name, llm))
     tools.extend(importedPdfTools(name, llm))
-    tools.extend(importedUrlTools(name, llm))
     tools.extend(importedHtmlTools(name, llm))
     tools.extend(importedMarkdownTools(name, llm))
     return tools

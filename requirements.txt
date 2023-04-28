@@ -11,3 +11,4 @@ unstructured
 chromadb
 tiktoken
 pdfminer-six
+tabulate

@@ -2,54 +2,44 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain import LLMChain
 from langchain.llms import AzureOpenAI
-from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
-from langchain.memory import ConversationBufferMemory
+from langchain.chat_models import AzureChatOpenAI
+from langchain.memory import ConversationBufferMemory, ConversationSummaryBufferMemory
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
 from docsimport import allImportedTools
 from customtools import allCustomTools
 from dotenv import load_dotenv
 import os
+os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 load_dotenv()
 
-def SetupAgent(id):
-    prefix = f"""{os.getenv("PROMPT_PREFIX")}
-    You have access to the following tools:"""
-    suffix = f"""{os.getenv("PROMPT_SUFFIX")}""" + """
-
-    {chat_history}
-    Question: {input}
-    {agent_scratchpad}"""
-
-    prompt = ZeroShotAgent.create_prompt(
-        tools, 
-        prefix=prefix, 
-        suffix=suffix, 
-        input_variables=["input", "chat_history", "agent_scratchpad"]
-    )
-    print("-----PROMPT-----")
-    print(prompt.template)
-    memories[id] = ConversationBufferMemory(memory_key="chat_history")
-    llm_chain = LLMChain(llm=azllm, prompt=prompt)
-    agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
-    agent_chains[id] = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memories[id], max_iterations=5, early_stopping_method="generate")
-
-def Nothing(input):
-    return
-
 azllm=AzureOpenAI(deployment_name=os.getenv("COMPLETION_DEPLOYMENT_NAME"), model_name=os.getenv("COMPLETION_MODEL_NAME"), temperature=0)
+azchat=AzureChatOpenAI(
+    openai_api_base=os.getenv("OPENAI_API_BASE"),
+    openai_api_version="2023-03-15-preview",
+    deployment_name=os.getenv("CHAT_DEPLOYMENT_NAME"),
+    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    openai_api_type = "azure",
+)
 
 memories = {}
+agents = {}
 agent_chains = {}
-tools = [
-    Tool(
-        name = "none",
-        func=Nothing,
-        description="Just reply what you think"
-    )
-]
 
+tools = []
 tools.extend(allImportedTools(os.getenv("TOOLS_CATEGORY"), azllm))
 tools.extend(allCustomTools())
+
+
+tool_names = [tool.name for tool in tools]
+
+def SetupChatAgent(id):
+    # memories[id] = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    memories[id] = ConversationSummaryBufferMemory(llm=azchat, max_token_limit=50, memory_key="chat_history", return_messages=True)
+    memories[id].save_context({"input": os.getenv("CHAT_SYSTEM_PROMPT")}, {"ouputs": "Copy that"})
+    
+    agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION, verbose=True, memory=memories[id], max_iterations=2, early_stopping_method="generate")
 
 # loop tools descriptions
 print("-----TOOLS-----")
@@ -73,14 +63,12 @@ app = FastAPI()
 @app.post("/run")
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
-        SetupAgent(msg.id)
-    try:
-        response = agent_chains[msg.id].run(input=msg.text)
-    except ValueError as e:
-        response = str(e)
-        if not response.startswith("Could not parse LLM output: `"):
-            raise e
-        response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+        SetupChatAgent(msg.id)
+    response = agent_chains[msg.id].run(input=msg.text)
+    print("------MEMORY ID: " + msg.id + "-----")
+    print("Conversation History: ")
+    print(agent_chains[msg.id].memory.buffer)
+    print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
     result = MessageRes(result=response)
     return result
 
