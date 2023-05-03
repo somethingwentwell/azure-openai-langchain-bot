@@ -94,14 +94,14 @@ content-type: application/json
 
 {
     "text": "What makes GitLab better than GitHub?",
-    "id": "ada"
+    "id": "ada2"
 }
 
 ### Custom Test
-POST http://localhost:8000/run
+POST http://localhost/run
 content-type: application/json
 
 {
-    "text": "如果製作蛋糕？",
-    "id": "cat"
+    "text": "議事論事的ACNO",
+    "id": "1"
 }
