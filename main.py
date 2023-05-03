@@ -36,7 +36,7 @@ tool_names = [tool.name for tool in tools]
 
 def SetupChatAgent(id):
     # memories[id] = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    memories[id] = ConversationSummaryBufferMemory(llm=azchat, max_token_limit=50, memory_key="chat_history", return_messages=True)
+    memories[id] = ConversationSummaryBufferMemory(llm=azchat, max_token_limit=500, memory_key="chat_history", return_messages=True)
     memories[id].save_context({"input": os.getenv("CHAT_SYSTEM_PROMPT")}, {"ouputs": "Copy that"})
     
     agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION, verbose=True, memory=memories[id], max_iterations=2, early_stopping_method="generate")
@@ -60,15 +60,30 @@ class MessageRes(BaseModel):
 
 app = FastAPI()
 
+def keepAsking(mid, text):
+    res = ""
+    try:
+        res = agent_chains[mid].run(input=text)
+    except:
+        res = keepAsking(mid, text)
+    return res
+
+def clearMemory(mid):
+    memories[mid].buffer.clear()
+    memories[mid].save_context({"input": os.getenv("CHAT_SYSTEM_PROMPT")}, {"ouputs": "Copy that"})
+
 @app.post("/run")
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id)
-    response = agent_chains[msg.id].run(input=msg.text)
+    # response = agent_chains[msg.id].run(input=msg.text)
+    response = keepAsking(msg.id, msg.text)
+    clearMemory(msg.id)
     print("------MEMORY ID: " + msg.id + "-----")
     print("Conversation History: ")
     print(agent_chains[msg.id].memory.buffer)
     print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
+
     result = MessageRes(result=response)
     return result
 

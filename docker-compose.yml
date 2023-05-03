@@ -11,9 +11,9 @@ services:
     depends_on:
       - lc-api
   lc-api:
-    image: warching/langchain-agent-api
+    image: warching/langchain-base-image:0.0.152
     ports:
-      - "8000-8002:80"
+      - "8000:80"
     # command:
     #   - /bin/sh
     #   - -c
@@ -42,7 +42,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     deploy:
-      replicas: 3
+      replicas: 1
   openai-teams-bot:
     environment:
       - DOCKER_DEFAULT_PLATFORM=linux/amd64

@@ -18,7 +18,7 @@ def libraryCsvTool():
     tools.append(Tool(
         name = "Book Searching Agent",
         func=csvAgent,
-        description=f"useful for when you need to answer questions about the books in Library. Input should be a question in complete sentence.",
+        description=f"useful for when you need to answer questions about the books and ACNO in Library. Input should be a question in complete sentence.",
         args_schema=DocsInput
     ))
     return tools
