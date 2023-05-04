@@ -33,7 +33,6 @@ services:
       - ./pdfs:/app/pdfs
       - ./txts:/app/txts
       - ./csvs:/app/csvs
-      - ./bookcsv:/app/bookcsv
       - ./main.py:/app/main.py
       - ./docsimport.py:/app/docsimport.py
       - ./customtools.py:/app/customtools.py
