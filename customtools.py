@@ -2,39 +2,33 @@ import os
 import openai
 from langchain.agents import Tool
 from dotenv import load_dotenv
+from langchain.llms import AzureOpenAI
+from langchain.agents import create_csv_agent
+from pydantic import BaseModel, Field
 
+azllm=AzureOpenAI(deployment_name=os.getenv("COMPLETION_DEPLOYMENT_NAME"), model_name=os.getenv("COMPLETION_MODEL_NAME"), temperature=0)
 load_dotenv()
 
-def custChatGPT(input):
-    openai.api_type = "azure"
-    openai.api_base = os.getenv("OPENAI_API_BASE")
-    openai.api_version = "2023-03-15-preview"
-    openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    response = openai.ChatCompletion.create(
-        engine=os.getenv("CHAT_DEPLOYMENT_NAME"),
-        messages = [{"role":"system","content":os.getenv("CHAT_SYSTEM_PROMPT")},
-                    {"role":"user","content":input}],
-        temperature=0.7,
-        max_tokens=800,
-        top_p=0.95,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=None)
-    if response.choices[0].message.content:
-        return response.choices[0].message.content
-    return "Azure OpenAI Config Error"
+class DocsInput(BaseModel):
+    question: str = Field()
 
-def CustChatGPTTool():
+def libraryCsvTool():
     tools = []
     tools.append(Tool(
-        name = "Custom ChatGPT Agent",
-        func=custChatGPT,
-        description=f"useful for when you need to answer questions about all the things that other tools can't answer. Input should be a question in complete sentence. "
+        name = "Book Searching Agent",
+        func=csvAgent,
+        description=f"useful for when you need to answer questions about the books and ACNO in Library. Input should be a question in complete sentence.",
+        args_schema=DocsInput
     ))
     return tools
 
+def csvAgent(input):
+    agent = create_csv_agent(azllm, 'bookcsv/books.csv', verbose=True)
+    response = agent.run(input)
+    return response
+
 def allCustomTools():
     tools = []
-    tools.extend(CustChatGPTTool())
+    # tools.extend(libraryCsvTool())
     return tools

@@ -42,22 +42,3 @@ content-type: application/json
     "text": "Do GitLab has container registry?",
     "id": "1"
 }
-
-### Test URL Tool
-POST http://127.0.0.1:8000/run
-content-type: application/json
-
-{
-    "text": "How to add file to GitLab repo?",
-    "id": "1"
-}
-
-### Test Custom ChatGPT Tool
-POST http://127.0.0.1:8000/run
-content-type: application/json
-
-{
-    "text": "What makes GitLab better than GitHub?",
-    "id": "1"
-}
-
