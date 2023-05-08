@@ -42,3 +42,39 @@ content-type: application/json
     "text": "Do GitLab has container registry?",
     "id": "1"
 }
+
+### Test Memory
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "Hi my name is Ada",
+    "id": "1"
+}
+
+### Test Memory
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "What is my name?",
+    "id": "1"
+}
+
+### Test Zapier
+POST http://127.0.0.1/run
+content-type: application/json
+
+{
+    "text": "Summarize the last gmail I received regarding AI flow solution, then create a card in Trello with the summarized content in 10 words as title",
+    "id": "3"
+}
+
+### Test Zapier
+POST http://127.0.0.1/run
+content-type: application/json
+
+{
+    "text": "Find the last gmail I received regarding Google Cloud Platform",
+    "id": "2"
+}

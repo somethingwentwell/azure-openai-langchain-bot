@@ -3,6 +3,7 @@
 .chroma/
 testnb.ipynb
 testnb.ipynb_checkpoints
+db-data
 # csvs/
 # urls/
 # htmls/
