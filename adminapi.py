@@ -54,7 +54,9 @@ async def readall():
     files = []
     for filename in os.listdir("."):
         if os.path.isdir(filename) and filename in ["pdfs", "csvs", "htmls", "urls", "markdowns"]:
-            files.append({filename: os.listdir(filename)})
+            for subfolder in os.listdir(filename):
+                if os.path.isdir(f"{filename}/{subfolder}"):
+                    files.append({"folder": filename, "subfolder": subfolder, "files": os.listdir(f"{filename}/{subfolder}")})
     return {"files": files}
 
 class DCActionReq(BaseModel):
