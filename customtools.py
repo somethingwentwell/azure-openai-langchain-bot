@@ -35,7 +35,21 @@ def ZapierTool():
     ))
     return tools
 
+def IDK(input):
+    return "I don't know."
+
+def IDKTool():
+    tools = []
+    tools.append(Tool(
+        name = "IDK Agent",
+        func=IDK,
+        description=f"Useful for when you need to answer the questions that other tools cannot answer. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
+        args_schema=DocsInput,
+        return_direct=True
+    ))
+    return tools
+
 def allCustomTools():
     tools = []
-    tools.extend(ZapierTool())
+    tools.extend(IDKTool())
     return tools
