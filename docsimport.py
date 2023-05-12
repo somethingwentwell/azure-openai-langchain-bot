@@ -122,9 +122,9 @@ def importedCsvTools(name, llm):
 
 def allImportedTools(name, llm):
     tools = []
-    tools.extend(importedCsvTools(name, llm))
+    # tools.extend(importedCsvTools(name, llm))
     tools.extend(importedTxtTools(name, llm))
-    tools.extend(importedPdfTools(name, llm))
-    tools.extend(importedHtmlTools(name, llm))
-    tools.extend(importedMarkdownTools(name, llm))
+    # tools.extend(importedPdfTools(name, llm))
+    # tools.extend(importedHtmlTools(name, llm))
+    # tools.extend(importedMarkdownTools(name, llm))
     return tools

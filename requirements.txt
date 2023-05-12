@@ -1,6 +1,6 @@
 fastapi
 pydantic
-langchain~=0.0.152
+langchain~=0.0.161
 python-dotenv
 openai
 markdown
@@ -12,3 +12,5 @@ chromadb
 tiktoken
 pdfminer-six
 tabulate
+psycopg
+psycopg2

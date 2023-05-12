@@ -82,6 +82,18 @@ curl --location --request POST 'http://127.0.0.1:8000/run' \
 }'
 ```
 
+## Admin API
+
+Run the API
+```
+uvicorn adminapi:app --reload --port 8100
+```
+
+Swagger
+```
+http://localhost:8100/docs
+```
+
 ## Contributing
 
 If you'd like to contribute to this project, please open an issue or pull request on GitHub.
