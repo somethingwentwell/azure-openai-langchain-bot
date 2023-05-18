@@ -1,28 +1,13 @@
 from langchain.callbacks.base import BaseCallbackHandler
-
-class CustomHandler(BaseCallbackHandler):
-    def __init__(self, session_id):
-        self.session_id = session_id
-
-    def on_llm_new_token(self, token):
-        pass
-
-    def on_llm_error(self, error):
-        pass
-
-    def on_agent_action(self, action):
-        pass
-
-    def on_agent_finish(self, finish):
-        pass
-
-    def on_llm_result(self, result):
-        pass
-# END: 5d7f5f5d5d5dimport json
+import json
 import psycopg2
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, AgentFinish, LLMResult
 from typing import Any, Dict, List
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class CustomHandler(BaseCallbackHandler):
     def __init__(self, session_id: str):
@@ -76,15 +61,19 @@ class CustomHandler(BaseCallbackHandler):
         """Run on agent end."""
         print("on_agent_finish")
         log(self.session_id, "on_agent_finish", json.dumps(finish))
-        print(self.session_id)
         # print(f"My custom handler, on_agent_finish: {json.dumps(finish, indent=2)}")
 
 def log(session_id: str, callback_type: str, log_json: str) -> None:
+    postgresUser = str(os.getenv("POSTGRES_USER"))
+    postgresPassword = str(os.getenv("POSTGRES_PASSWORD"))
+    postgresHost = str(os.getenv("POSTGRES_HOST"))
+    postgresPort = str(os.getenv("POSTGRES_PORT"))
     conn = psycopg2.connect(
-        host="host.docker.internal",
+        host=postgresHost,
+        port=postgresPort,
         database="chat_history",
-        user="postgres",
-        password="postgres"
+        user=postgresUser,
+        password=postgresPassword
     )
     cur = conn.cursor()
     cur.execute(

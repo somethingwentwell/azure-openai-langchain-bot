@@ -5,7 +5,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./init-config/nginx.conf:/etc/nginx/nginx.conf
     networks:
       - langchain-network
     depends_on:
@@ -27,16 +27,11 @@ services:
     env_file:
       - .env
     volumes:
-      - ./markdowns:/app/markdowns
-      - ./urls:/app/urls
-      - ./htmls:/app/htmls
-      - ./pdfs:/app/pdfs
+      - ./docs-data:/app/docs-data
+      - ./tools:/app/tools
       - ./txts:/app/txts
-      - ./csvs:/app/csvs
       - ./main.py:/app/main.py
-      - ./docsimport.py:/app/docsimport.py
-      - ./customtools.py:/app/customtools.py
-      - ./callbackhandler.py:/app/callbackhandler.py
+      - ./callback.py:/app/callback.py
     networks:
       - langchain-network
     extra_hosts:
@@ -65,7 +60,7 @@ services:
   #       PGDATA: /var/lib/postgresql/data
   #   volumes:
   #       - ./db-data:/var/lib/postgresql/data
-  #       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  #       - ./init-config/init.sql:/docker-entrypoint-initdb.d/10-init.sql
   #   ports:
   #       - "5432:5432"
   #   extra_hosts:
