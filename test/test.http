@@ -44,7 +44,7 @@ content-type: application/json
 }
 
 ### Test Memory
-POST http://127.0.0.1:8000/run
+POST http://127.0.0.1:80/run
 content-type: application/json
 
 {
@@ -58,7 +58,7 @@ content-type: application/json
 
 {
     "text": "What is my name?",
-    "id": "2"
+    "id": "1"
 }
 
 ### Test Zapier
@@ -77,4 +77,13 @@ content-type: application/json
 {
     "text": "Find the last gmail I received regarding Google Cloud Platform",
     "id": "2"
+}
+
+### Test
+POST http://127.0.0.1/run
+content-type: application/json
+
+{
+    "text": "How to open CoporatePlus account",
+    "id": "1"
 }

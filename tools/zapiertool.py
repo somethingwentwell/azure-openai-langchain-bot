@@ -10,7 +10,7 @@ from langchain.agents import AgentType
 from langchain.agents.agent_toolkits import ZapierToolkit
 from langchain.utilities.zapier import ZapierNLAWrapper
 
-azllm=AzureOpenAI(deployment_name=os.getenv("COMPLETION_DEPLOYMENT_NAME"), model_name=os.getenv("COMPLETION_MODEL_NAME"), temperature=0)
+azllm=AzureOpenAI(client=None, deployment_name=str(os.getenv("COMPLETION_DEPLOYMENT_NAME")), model_name=str(os.getenv("COMPLETION_MODEL_NAME")), temperature=0)
 load_dotenv()
 
 
@@ -30,26 +30,13 @@ def ZapierTool():
     tools.append(Tool(
         name = "Workflow Agent",
         func=zapierAgent,
-        description=f"Useful for when you need to run workflow actions like email, trello cards etc. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
+        description=f"Useful for when you need to run workflow actions like find contacts and send email. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
         args_schema=DocsInput
     ))
     return tools
 
-def IDK(input):
-    return "I don't know."
-
-def IDKTool():
+def zapiertool():
     tools = []
-    tools.append(Tool(
-        name = "IDK Agent",
-        func=IDK,
-        description=f"Useful for when you need to answer the questions that other tools cannot answer. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
-        args_schema=DocsInput,
-        return_direct=True
-    ))
-    return tools
-
-def allCustomTools():
-    tools = []
-    tools.extend(IDKTool())
+    tools.extend(ZapierTool())
+    # tools.extend(zapier_toolkit.get_tools())
     return tools

@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-embeddings = OpenAIEmbeddings(model=os.getenv("EMBEDDING_DEPLOYMENT_NAME"), chunk_size=1)
+embeddings = OpenAIEmbeddings(client=None, model=str(os.getenv("EMBEDDING_DEPLOYMENT_NAME")), chunk_size=1)
 text_splitter = CharacterTextSplitter(chunk_size=600, chunk_overlap=0)
 
 class DocsInput(BaseModel):
@@ -19,7 +19,7 @@ class DocsInput(BaseModel):
 
 def importedMarkdownTools(name, llm):
     tools = []
-    for root, dirnames, filenames in os.walk('./markdowns'):
+    for root, dirnames, filenames in os.walk('./docs-data/markdowns'):
         if (os.path.basename(root) != "markdowns"):
             data = []
             for filename in fnmatch.filter(filenames, '*.md'):
@@ -40,7 +40,7 @@ def importedMarkdownTools(name, llm):
 
 def importedHtmlTools(name, llm):
     tools = []
-    for root, dirnames, filenames in os.walk('./htmls'):
+    for root, dirnames, filenames in os.walk('./docs-data/htmls'):
         if (os.path.basename(root) != "htmls"):
             data = []
             for filename in fnmatch.filter(filenames, '*.html'):
@@ -61,7 +61,7 @@ def importedHtmlTools(name, llm):
 
 def importedPdfTools(name, llm):
     tools = []
-    for root, dirnames, filenames in os.walk('./pdfs'):
+    for root, dirnames, filenames in os.walk('./docs-data/pdfs'):
         if (os.path.basename(root) != "pdfs"):
             data = []
             for filename in fnmatch.filter(filenames, '*.pdf'):
@@ -82,7 +82,8 @@ def importedPdfTools(name, llm):
 
 def importedTxtTools(name, llm):
     tools = []
-    for root, dirnames, filenames in os.walk('./txts'):
+    for root, dirnames, filenames in os.walk('./docs-data/txts'):
+        print(root)
         if (os.path.basename(root) != "txts"):
             data = []
             for filename in fnmatch.filter(filenames, '*.txt'):
@@ -102,7 +103,7 @@ def importedTxtTools(name, llm):
 
 def importedCsvTools(name, llm):
     tools = []
-    for root, dirnames, filenames in os.walk('./csvs'):
+    for root, dirnames, filenames in os.walk('./docs-data/csvs'):
         if (os.path.basename(root) != "csvs"):
             data = []
             for filename in fnmatch.filter(filenames, '*.csv'):
@@ -120,11 +121,11 @@ def importedCsvTools(name, llm):
             ))
     return tools
 
-def allImportedTools(name, llm):
+def docsimport(name, llm):
     tools = []
+    # tools.extend(importedTxtTools(name, llm))
     # tools.extend(importedCsvTools(name, llm))
-    tools.extend(importedTxtTools(name, llm))
     # tools.extend(importedPdfTools(name, llm))
-    # tools.extend(importedHtmlTools(name, llm))
+    tools.extend(importedHtmlTools(name, llm))
     # tools.extend(importedMarkdownTools(name, llm))
     return tools
