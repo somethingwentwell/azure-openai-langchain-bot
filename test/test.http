@@ -12,7 +12,7 @@ POST http://127.0.0.1:8000/run
 content-type: application/json
 
 {
-    "text": "How to do MR in GitLab?",
+    "text": "What is Merge Request in GitLab?",
     "id": "1"
 }
 
@@ -86,4 +86,22 @@ content-type: application/json
 {
     "text": "How to open CoporatePlus account",
     "id": "1"
+}
+
+### Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "how many 'GitLab' words shown in GitLabPacakges.txt",
+    "id": "1"
+}
+
+### Test
+POST http://127.0.0.1:8000/run
+content-type: application/json
+
+{
+    "text": "how old is Xi Jinping",
+    "id": "2"
 }

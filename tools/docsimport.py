@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 embeddings = OpenAIEmbeddings(client=None, model=str(os.getenv("EMBEDDING_DEPLOYMENT_NAME")), chunk_size=1)
-text_splitter = CharacterTextSplitter(chunk_size=600, chunk_overlap=0)
+text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=20)
 
 class DocsInput(BaseModel):
     question: str = Field()
@@ -123,9 +123,9 @@ def importedCsvTools(name, llm):
 
 def docsimport(name, llm):
     tools = []
-    # tools.extend(importedTxtTools(name, llm))
+    tools.extend(importedTxtTools(name, llm))
     # tools.extend(importedCsvTools(name, llm))
     # tools.extend(importedPdfTools(name, llm))
-    tools.extend(importedHtmlTools(name, llm))
+    # tools.extend(importedHtmlTools(name, llm))
     # tools.extend(importedMarkdownTools(name, llm))
     return tools

@@ -136,6 +136,30 @@ async def toggle_tools(req: ToolReq):
 
     return "Code block toggled successfully."
 
+@app.get("/all_tools")
+async def get_all_tools():
+    with open("main.py", "r") as f:
+        lines = f.readlines()
+
+    start_index = None
+    end_index = None
+
+    for i, line in enumerate(lines):
+        if line.strip() == "# ADD TOOL START":
+            start_index = i
+        elif line.strip() == "# ADD TOOL END":
+            end_index = i
+
+    if start_index is None or end_index is None:
+        return "Error: Could not find start and/or end of code block."
+
+    tools = []
+    for i in range(start_index + 1, end_index):
+        tool = lines[i].strip().split("(")[1]
+        tools.append(tool)
+
+    return tools
+
 @app.get("/disable_all_tools")
 async def disable_tools():
     with open("main.py", "r") as f:
@@ -225,7 +249,7 @@ async def update_env(req: EnvReq) -> JSONResponse:
     return JSONResponse(content=env_vars)
 
 @app.put("/env")
-async def update_env(req: dict) -> JSONResponse:
+async def update_all_env(req: dict) -> JSONResponse:
     try:
         with open(".env", "w") as f:
             for key, value in req.items():

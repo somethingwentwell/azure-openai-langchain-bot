@@ -11,7 +11,7 @@ services:
     depends_on:
       - lc-api
   lc-api:
-    image: warching/langchain-base-image:0.0.161
+    image: warching/langchain-base-image:0.0.176
     ports:
       - "8000:80"
     # command:

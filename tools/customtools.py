@@ -4,6 +4,17 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import AzureChatOpenAI
 from langchain.chains import LLMChain
 from dotenv import load_dotenv
+from langchain.utilities import PythonREPL
+from langchain.tools.file_management import (
+    ReadFileTool,
+    CopyFileTool,
+    DeleteFileTool,
+    MoveFileTool,
+    WriteFileTool,
+    ListDirectoryTool,
+)
+from langchain.agents.agent_toolkits import FileManagementToolkit
+
 import os
 
 load_dotenv()
@@ -43,6 +54,31 @@ def IDKTool():
     ))
     return tools
 
+python_repl = PythonREPL()
+
+def PythonTool():
+    tools = []
+    tools.append(Tool(
+        name="python_repl",
+        func=python_repl.run,
+        description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
+        args_schema=DocsInput,
+    ))
+    return tools
+
+def Manual(input):
+    return
+
+def ManualTool():
+    tools = []
+    tools.append(Tool(
+        name = "manual_agent",
+        func=Manual,
+        description=f"Just reply what you think",
+        args_schema=DocsInput,
+    ))
+    return tools
+
 def FindName(input):
     result = chain.run(input)
     return result
@@ -60,5 +96,5 @@ def FindNameTool():
 
 def customtools():
     tools = []
-    tools.extend(IDKTool())
+    tools.extend(FileManagementToolkit(root_dir="./autogpt-data", selected_tools=["read_file", "list_directory"]).get_tools())
     return tools
