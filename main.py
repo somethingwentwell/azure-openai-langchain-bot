@@ -9,9 +9,9 @@ from dotenv import load_dotenv
 import os
 
 # IMPORT TOOL START
-from tools.bingsearchtool import bingsearchtool
-from tools.duckduckgosearchtool import duckduckgosearchtool
-from tools.pythontool import pythontool
+#from tools.bingsearchtool import bingsearchtool
+#from tools.duckduckgosearchtool import duckduckgosearchtool
+#from tools.pythontool import pythontool
 #from tools.docsimport import docsimport
 #from tools.zapiertool import zapiertool
 #from tools.customtools import customtools
@@ -37,9 +37,9 @@ azchat=AzureChatOpenAI(
 tools = load_tools(["llm-math"], llm=azchat)
 
 # ADD TOOL START
-tools.extend(bingsearchtool())
-tools.extend(duckduckgosearchtool())
-tools.extend(pythontool())
+#tools.extend(bingsearchtool())
+#tools.extend(duckduckgosearchtool())
+#tools.extend(pythontool())
 #tools.extend(docsimport(os.getenv("TOOLS_CATEGORY"), azchat))
 #tools.extend(zapiertool())
 #tools.extend(customtools())
@@ -111,9 +111,9 @@ def clearMemory(mid):
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id)
-    response = agent_chains[msg.id].run(input=msg.text)
+    # response = agent_chains[msg.id].run(input=msg.text)
     response = keepAsking(msg.id, msg.text)
-    # history[msg.id].add_user_message(msg.text)
+    history[msg.id].add_user_message(msg.text)
     history[msg.id].add_ai_message(response)
     # clearMemory(msg.id)
     print("------MEMORY ID: " + msg.id + "-----")
