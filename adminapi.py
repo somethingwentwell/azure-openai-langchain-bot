@@ -22,10 +22,10 @@ app.add_middleware(
 
 # Connect to the database
 conn = psycopg2.connect(
-    host="127.0.0.1",
+    host=str(os.getenv("POSTGRES_HOST")),
     database="chat_history",
-    user="postgres",
-    password="postgres"
+    user=str(os.getenv("POSTGRES_USER")),
+    password=str(os.getenv("POSTGRES_PASSWORD"))
 )
 
 # Define the API endpoints
@@ -258,3 +258,18 @@ async def update_all_env(req: dict) -> JSONResponse:
         return JSONResponse(content=env_vars)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/chatgptplugins")
+async def get_chatgptplugins():
+    with open(os.path.join(os.getcwd(), "tools", "chatgptplugins.txt"), "r") as f:
+        return f.read()
+
+class ChatGPTPlugins(BaseModel):
+    plugins: str
+
+@app.post("/chatgptplugins")
+async def add_chatgptplugins(plugin: ChatGPTPlugins):
+    print(plugin.plugins)
+    with open(os.path.join(os.getcwd(), "tools", "chatgptplugins.txt"), "w") as f:
+        f.write(plugin.plugins + "\n")
+    return {"message": "Plugin added successfully."}

@@ -4,19 +4,8 @@
 testnb.ipynb
 testnb.ipynb_checkpoints
 db-data
-# csvs/
-# urls/
-# htmls/
-# txts/
-# pdfs/
-# markdowns/
-# _csvs/
-# _urls/
-# _htmls/
-# _txts/
-# _pdfs/
-# _markdowns/
-
+_docs-data
+.env.copy
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

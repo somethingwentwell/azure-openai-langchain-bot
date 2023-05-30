@@ -12,7 +12,7 @@ def PythonTool():
         name="python_repl",
         func=python_repl.run,
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
-        args_schema=DocsInput,
+        args_schema=DocsInput
     ))
     return tools
 

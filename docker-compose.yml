@@ -1,17 +1,17 @@
 version: "3.9"
 services:
-  nginx:
-    image: nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./init-config/nginx.conf:/etc/nginx/nginx.conf
-    networks:
-      - langchain-network
-    depends_on:
-      - lc-api
+  # nginx:
+  #   image: nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./init-config/nginx.conf:/etc/nginx/nginx.conf
+  #   networks:
+  #     - langchain-network
+  #   depends_on:
+  #     - lc-api
   lc-api:
-    image: warching/langchain-base-image:0.0.176
+    image: warching/langchain-base-image:0.0.184
     ports:
       - "8000:80"
     # command:
@@ -24,12 +24,17 @@ services:
       - -c
       - |
           uvicorn main:app --reload --host 0.0.0.0 --port 80
+    # command:
+    #   - /bin/bash
+    #   - -c
+    #   - |
+    #       curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+    #       uvicorn main:app --reload --host 0.0.0.0 --port 80
     env_file:
       - .env
     volumes:
       - ./docs-data:/app/docs-data
       - ./tools:/app/tools
-      - ./txts:/app/txts
       - ./main.py:/app/main.py
       - ./callback.py:/app/callback.py
     networks:
@@ -38,18 +43,42 @@ services:
       - "host.docker.internal:host-gateway"
     deploy:
       replicas: 1
-  openai-teams-bot:
-    environment:
-      - DOCKER_DEFAULT_PLATFORM=linux/amd64
-    image: warching/openai-teams-bot:langchain
+
+  lc-admin-api:
+    image: warching/langchain-base-image:0.0.184
     ports:
-      - "3978:3978"
+      - "8100:80"
+    command:
+      - /bin/bash
+      - -c
+      - |
+          uvicorn adminapi:app --reload --host 0.0.0.0 --port 80
     env_file:
       - .env
+    volumes:
+      - ./adminapi.py:/app/adminapi.py
+      - ./tools:/app/tools
+      - ./main.py:/app/main.py
+      - ./.env:/app/.env
+      - ./docs-data:/app/docs-data
     networks:
       - langchain-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    deploy:
+      replicas: 1
+  # openai-teams-bot:
+  #   environment:
+  #     - DOCKER_DEFAULT_PLATFORM=linux/amd64
+  #   image: warching/openai-teams-bot:langchain
+  #   ports:
+  #     - "3978:3978"
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - langchain-network
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
   # db:
   #   image: postgres:15.2-alpine
   #   restart: always

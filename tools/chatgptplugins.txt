@@ -1,0 +1,2 @@
+https://www.klarna.com/.well-known/ai-plugin.json
+https://www.wolframalpha.com/.well-known/ai-plugin.json

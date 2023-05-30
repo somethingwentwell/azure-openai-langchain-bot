@@ -1,7 +1,6 @@
-from langchain.callbacks.base import BaseCallbackHandler
+from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 import json
 import psycopg2
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import AgentAction, AgentFinish, LLMResult
 from typing import Any, Dict, List
 from dotenv import load_dotenv
@@ -9,11 +8,80 @@ import os
 
 load_dotenv()
 
+class WSHandler(AsyncCallbackHandler):
+    def __init__(self, websocket, session_id: str):
+        self.session_id = session_id
+        self.websocket = websocket
+        super().__init__()
+
+    # async def on_llm_start(
+    #     self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
+    # ) -> Any:
+    #     """Run when LLM starts running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_llm_start",
+    #         "thought": prompts
+    #     })
+    
+    # async def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
+    #     """Run when LLM ends running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_llm_end",
+    #         "thought": response
+    #     })
+
+    # async def on_chain_start(
+    #     self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
+    # ) -> Any:
+    #     """Run when chain starts running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_chain_start",
+    #         "thought": inputs
+    #     })
+
+    # async def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
+    #     """Run when chain ends running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_chain_end",
+    #         "thought": outputs
+    #     })
+
+    # async def on_tool_start(
+    #     self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
+    # ) -> Any:
+    #     """Run when tool starts running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_tool_start",
+    #         "thought": input_str
+    #     })
+
+    # async def on_tool_end(self, output: str, **kwargs: Any) -> Any:
+    #     """Run when tool ends running."""
+    #     await self.websocket.send_json({
+    #         "callback": "on_tool_end",
+    #         "thought": output
+    #     })
+
+    async def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
+        """Run on agent action."""
+        actionJson = json.loads(json.dumps(action))
+        await self.websocket.send_json({
+            "callback": "on_agent_action",
+            "thought": actionJson
+        })
+
+    async def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> Any:
+        """Run on agent end."""
+        finishJson = json.loads(json.dumps(finish))
+        await self.websocket.send_json({
+            "callback": "on_agent_finish",
+            "thought": finishJson
+        })
+
 class CustomHandler(BaseCallbackHandler):
     def __init__(self, session_id: str):
         self.session_id = session_id
         super().__init__()
-
 
     def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any

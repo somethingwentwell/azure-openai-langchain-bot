@@ -25,11 +25,16 @@ def zapierAgent(input):
     response = agent.run(input)
     return response
 
+def aZapierAgent(input):
+    response = agent.arun(input)
+    return response
+
 def ZapierTool():
     tools = []
     tools.append(Tool(
         name = "Workflow Agent",
         func=zapierAgent,
+        coroutine=aZapierAgent,
         description=f"Useful for when you need to run workflow actions like find contacts and send email. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
         args_schema=DocsInput
     ))

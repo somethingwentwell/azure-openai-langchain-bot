@@ -46,6 +46,10 @@ Make sure to keep the `.env` file private and do not commit it to version contro
 docker-compose -f docker-compose-db.yml up
 docker-compose up
 ```
+or
+```
+python -m uvicorn main:app --reload --port 8000
+```
 
 4. Test the API:
 ```
