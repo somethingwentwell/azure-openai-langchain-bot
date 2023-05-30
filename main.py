@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import asyncio 
 import os
 import logging
+import sys
 
 
 #from tools.duckduckgosearchtool import duckduckgosearchtool
@@ -178,3 +179,5 @@ def get_tools():
         tool_dict = {"name": tool.name, "description": tool.description}
         tool_list.append(tool_dict)
     return {"tools": tool_list}
+
+# RESTART: ca43e2c8-ea0f-463f-9df5-11ef589b7170

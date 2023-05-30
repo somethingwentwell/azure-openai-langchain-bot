@@ -9,6 +9,8 @@ from dotenv import dotenv_values, set_key
 import psycopg2
 import os
 import subprocess
+import requests
+import uuid
 
 app = FastAPI()
 # Add middleware to add Access-Control-Allow-Origin header to all responses
@@ -273,3 +275,34 @@ async def add_chatgptplugins(plugin: ChatGPTPlugins):
     with open(os.path.join(os.getcwd(), "tools", "chatgptplugins.txt"), "w") as f:
         f.write(plugin.plugins + "\n")
     return {"message": "Plugin added successfully."}
+
+class ChatServer(BaseModel):
+    url: str
+
+
+@app.get("/restart_chat_server")
+async def restart_server():
+    lIndex = 0
+    with open("./main.py", "r") as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            if "# RESTART:" in line:
+                lIndex = i
+                break
+    print(lIndex)
+    lines[lIndex] = f"# RESTART: {uuid.uuid4()}\n"
+    with open("./main.py", "w") as f:
+        f.writelines(lines)
+
+    return {"status": "Restarted"}
+
+@app.post("/chat_server_status")
+async def check_tools(server: ChatServer):
+    try:
+        response = requests.get(server.url + "/tools", timeout=1)
+        if response.status_code == 200:
+            return {"status": "Ready"}
+        else:
+            return {"status": "Not Ready"}
+    except:
+        return {"status": "Not Ready"}
