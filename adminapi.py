@@ -299,7 +299,7 @@ async def restart_server():
 @app.post("/chat_server_status")
 async def check_tools(server: ChatServer):
     try:
-        response = requests.get(server.url + "/tools", timeout=1)
+        response = requests.get(server.url + "/docs", timeout=5)
         if response.status_code == 200:
             return {"status": "Ready"}
         else:

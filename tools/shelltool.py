@@ -7,7 +7,8 @@ class DocsInput(BaseModel):
 
 shell_tool = ShellTool()
 
-shell_tool.description = shell_tool.description + f"args {shell_tool.args}".replace("{", "{{").replace("}", "}}")
+# shell_tool.description = shell_tool.description + f"args {shell_tool.args}".replace("{", "{{").replace("}", "}}")
+shell_tool.description = "Run shell commands on this Linux machine.args {{'commands': {{'title': 'Command', 'description': 'A shell command in string to run. Deserialized using json.loads', 'anyOf': [{{'type': 'string'}}]}}}}"
 
 def AShellTool():
     tools = []
