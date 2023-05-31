@@ -32,6 +32,8 @@ services:
     #       uvicorn main:app --reload --host 0.0.0.0 --port 80
     env_file:
       - .env
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
     volumes:
       - ./docs-data:/app/docs-data
       - ./tools:/app/tools

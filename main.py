@@ -1,17 +1,15 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain.chat_models import AzureChatOpenAI
 from langchain.memory import ConversationSummaryBufferMemory, PostgresChatMessageHistory
-from langchain.agents import initialize_agent, load_tools, AgentType
+from langchain.agents import initialize_agent, AgentType
 from langchain.callbacks import tracing_enabled
 from callback import CustomHandler, WSHandler
 from dotenv import load_dotenv
 import asyncio 
 import os
 import logging
-import sys
-
 
 #from tools.duckduckgosearchtool import duckduckgosearchtool
 #from tools.pythontool import pythontool
@@ -91,9 +89,6 @@ def SetupChatAgent(id, callbacks):
         max_iterations=10, 
         early_stopping_method="generate",
         callbacks=callbacks)
-
-    print(tools) 
-
 
 class MessageReq(BaseModel):
     id: str
