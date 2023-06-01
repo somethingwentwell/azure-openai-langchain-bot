@@ -15,7 +15,9 @@ from langchain.tools.file_management import (
     ListDirectoryTool,
 )
 from langchain.agents.agent_toolkits import FileManagementToolkit
-
+    
+import requests
+import json
 import os
 
 load_dotenv()
@@ -55,7 +57,39 @@ def IDKTool():
     ))
     return tools
 
+def callOpenAI(input):
+    url = "https://tecopenai.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview"
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": "c52861e80f4241d69850e8b3190cdb74"
+    }
+    payload = {
+        "messages": [{"role":"user","content":input}],
+        "max_tokens": 800,
+        "temperature": 0.7,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "top_p": 0.95,
+        "stop": None
+    }
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    response_json = json.loads(response.text)
+    message = response_json['choices'][0]['message']['content']
+    return str(message)
+
+def AzureOpenAITool():
+    tools = []
+    tools.append(Tool(
+        name = "Azure OpenAI Tool",
+        func=callOpenAI,
+        description=f"Useful for when you need to call Azure OpenAI Chat API directly. Input should be a question in complete sentence. Output will be the action result and you can use it as Final Answer.",
+        args_schema=DocsInput,
+        return_direct=True
+    ))
+    return tools
+
 def customtools():
     tools = []
+    tools.extend(AzureOpenAITool())
     # tools.extend(FileManagementToolkit(root_dir="./autogpt-data", selected_tools=["read_file", "list_directory"]).get_tools())
     return tools

@@ -2,24 +2,30 @@ import os
 import openai
 from langchain.agents import Tool
 from dotenv import load_dotenv
-from langchain.llms import AzureOpenAI
-from langchain.agents import create_csv_agent
 from pydantic import BaseModel, Field
 from langchain.agents import initialize_agent
+from langchain.chat_models import AzureChatOpenAI
 from langchain.agents import AgentType
 from langchain.agents.agent_toolkits import ZapierToolkit
 from langchain.utilities.zapier import ZapierNLAWrapper
 
-azllm=AzureOpenAI(client=None, deployment_name=str(os.getenv("COMPLETION_DEPLOYMENT_NAME")), model_name=str(os.getenv("COMPLETION_MODEL_NAME")), temperature=0)
 load_dotenv()
 
+azchat=AzureChatOpenAI(
+    client=None,
+    openai_api_base=str(os.getenv("OPENAI_API_BASE")),
+    openai_api_version="2023-03-15-preview",
+    deployment_name=str(os.getenv("CHAT_DEPLOYMENT_NAME")),
+    openai_api_key=str(os.getenv("OPENAI_API_KEY")),
+    # openai_api_type = "azure"
+)
 
 class DocsInput(BaseModel):
     question: str = Field()
 
 zapier = ZapierNLAWrapper()
 zapier_toolkit = ZapierToolkit.from_zapier_nla_wrapper(zapier)
-agent = initialize_agent(zapier_toolkit.get_tools(), azllm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+agent = initialize_agent(zapier_toolkit.get_tools(), azchat, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
 def zapierAgent(input):
     response = agent.run(input)
@@ -43,5 +49,4 @@ def ZapierTool():
 def zapiertool():
     tools = []
     tools.extend(ZapierTool())
-    # tools.extend(zapier_toolkit.get_tools())
     return tools

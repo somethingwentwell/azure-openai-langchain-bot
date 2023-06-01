@@ -9,61 +9,15 @@ import os
 load_dotenv()
 
 class WSHandler(AsyncCallbackHandler):
-    def __init__(self, websocket, session_id: str):
+    def __init__(self, websocket, session_id: str, user_q: str):
         self.session_id = session_id
+        self.user_q = user_q
         self.websocket = websocket
         super().__init__()
 
-    # async def on_llm_start(
-    #     self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
-    # ) -> Any:
-    #     """Run when LLM starts running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_llm_start",
-    #         "thought": prompts
-    #     })
-    
-    # async def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
-    #     """Run when LLM ends running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_llm_end",
-    #         "thought": response
-    #     })
-
-    # async def on_chain_start(
-    #     self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
-    # ) -> Any:
-    #     """Run when chain starts running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_chain_start",
-    #         "thought": inputs
-    #     })
-
-    # async def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
-    #     """Run when chain ends running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_chain_end",
-    #         "thought": outputs
-    #     })
-
-    # async def on_tool_start(
-    #     self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
-    # ) -> Any:
-    #     """Run when tool starts running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_tool_start",
-    #         "thought": input_str
-    #     })
-
-    # async def on_tool_end(self, output: str, **kwargs: Any) -> Any:
-    #     """Run when tool ends running."""
-    #     await self.websocket.send_json({
-    #         "callback": "on_tool_end",
-    #         "thought": output
-    #     })
-
     async def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
         """Run on agent action."""
+        log(self.session_id, self.user_q, "on_agent_action", json.dumps(action))
         actionJson = json.loads(json.dumps(action))
         await self.websocket.send_json({
             "callback": "on_agent_action",
@@ -72,6 +26,7 @@ class WSHandler(AsyncCallbackHandler):
 
     async def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> Any:
         """Run on agent end."""
+        log(self.session_id, self.user_q, "on_agent_finish", json.dumps(finish))
         finishJson = json.loads(json.dumps(finish))
         await self.websocket.send_json({
             "callback": "on_agent_finish",
@@ -79,59 +34,23 @@ class WSHandler(AsyncCallbackHandler):
         })
 
 class CustomHandler(BaseCallbackHandler):
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, user_q: str):
         self.session_id = session_id
+        self.user_q = user_q
         super().__init__()
-
-    def on_llm_start(
-        self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
-    ) -> Any:
-        """Run when LLM starts running."""
-        log(self.session_id, "on_llm_start", json.dumps(serialized))
-        print(f"Callback: on_llm_start: {json.dumps(serialized, indent=2)}")
-    
-    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
-        """Run when LLM ends running."""
-        log(self.session_id, "on_llm_end", json.dumps(response))
-        print(f"Callback: on_llm_end: {json.dumps(response, indent=2)}")
-
-    def on_chain_start(
-        self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
-    ) -> Any:
-        """Run when chain starts running."""
-        log(self.session_id, "on_chain_start", json.dumps(serialized))
-        print(f"Callback: on_chain_start: {json.dumps(serialized, indent=2)}")
-
-    def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
-        """Run when chain ends running."""
-        log(self.session_id, "on_chain_end", json.dumps(outputs))
-        print(f"Callback: on_chain_end: {json.dumps(outputs, indent=2)}")
-
-    # your other methods here
-    def on_tool_start(
-        self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
-    ) -> Any:
-        """Run when tool starts running."""
-        log(self.session_id, "on_tool_start", json.dumps(serialized))
-        print(f"Callback: on_tool_start: {json.dumps(serialized, indent=2)}")
-
-    def on_tool_end(self, output: str, **kwargs: Any) -> Any:
-        """Run when tool ends running."""
-        log(self.session_id, "on_tool_end", json.dumps(output))
-        print(f"Callback: on_tool_end: {output}")
 
     def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
         """Run on agent action."""
-        log(self.session_id, "on_agent_action", json.dumps(action))
+        log(self.session_id, self.user_q, "on_agent_action", json.dumps(action))
         print(f"Callback: on_agent_action: {json.dumps(action, indent=2)}")
 
     def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> Any:
         """Run on agent end."""
         print("on_agent_finish")
-        log(self.session_id, "on_agent_finish", json.dumps(finish))
+        log(self.session_id, self.user_q, "on_agent_finish", json.dumps(finish))
         print(f"Callback: on_agent_finish: {json.dumps(finish, indent=2)}")
 
-def log(session_id: str, callback_type: str, log_json: str) -> None:
+def log(session_id: str, user_q: str, callback_type: str, log_json: str) -> None:
     postgresUser = str(os.getenv("POSTGRES_USER"))
     postgresPassword = str(os.getenv("POSTGRES_PASSWORD"))
     postgresHost = str(os.getenv("POSTGRES_HOST"))
@@ -145,8 +64,8 @@ def log(session_id: str, callback_type: str, log_json: str) -> None:
     )
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO agent_log (session_id, callback_type, log) VALUES (%s, %s, %s)",
-        (session_id, callback_type, log_json)
+        "INSERT INTO agent_log (session_id, user_q, callback_type, log) VALUES (%s, %s, %s, %s)",
+        (session_id, user_q, callback_type, log_json)
     )
     conn.commit()
     cur.close()

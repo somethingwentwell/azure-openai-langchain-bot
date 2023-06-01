@@ -34,7 +34,7 @@ conn = psycopg2.connect(
 @app.get("/agent_log/{session_id}")
 async def get_agent_logs(session_id: str) -> JSONResponse:
     cur = conn.cursor()
-    cur.execute(f"SELECT callback_type, log FROM public.agent_log WHERE session_id='{session_id}'")
+    cur.execute(f"SELECT user_q, callback_type, log FROM public.agent_log WHERE session_id='{session_id}'")
     rows = cur.fetchall()
     cur.close()
     return JSONResponse(content=rows)
@@ -50,7 +50,7 @@ async def get_messages(session_id: str) -> JSONResponse:
 @app.get("/session_ids")
 async def get_all_session_ids() -> JSONResponse:
     cur = conn.cursor()
-    cur.execute("SELECT DISTINCT session_id FROM public.message_store")
+    cur.execute("SELECT DISTINCT session_id FROM public.agent_log")
     rows = cur.fetchall()
     cur.close()
     session_ids = [row[0] for row in rows]

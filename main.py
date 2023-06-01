@@ -58,7 +58,14 @@ azchat=AzureChatOpenAI(
 
 tool_names = [tool.name for tool in tools]
 
-print(tool_names) 
+agent_type_str = str(os.getenv("AGENT_TYPE"))
+agent_type = {
+    "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+    "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION
+}.get(agent_type_str, None)
+if agent_type is None:
+    raise ValueError(f"Invalid agent type: {agent_type_str}")
 
 def SetupChatAgent(id, callbacks):
     # memories[id] = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
@@ -80,9 +87,7 @@ def SetupChatAgent(id, callbacks):
     agent_chains[id] = initialize_agent(
         tools,
         azchat, 
-        agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION, 
-        # agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION, 
-        # agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION, 
+        agent=agent_type,
         verbose=True, 
         memory=memories[id], 
         handle_parsing_errors=True,
@@ -107,14 +112,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def keepAsking(mid, text):
-    res = ""
-    try:
-        res = agent_chains[mid].run(input=text)
-    except:
-        res = keepAsking(mid, text)
-    return res
-
 def clearMemory(mid):
     newMessage = str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nThe summary as below:\n" + agent_chains[mid].memory.predict_new_summary(agent_chains[mid].memory.buffer, agent_chains[mid].memory.moving_summary_buffer)
     agent_chains[mid].memory.buffer.clear()
@@ -123,12 +120,10 @@ def clearMemory(mid):
 @app.post("/run")
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
-        SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id)])
+        SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
     response = agent_chains[msg.id].run(input=msg.text)
-    # response = keepAsking(msg.id, msg.text)
     history[msg.id].add_user_message(msg.text)
     history[msg.id].add_ai_message(response)
-    # clearMemory(msg.id)
     print("------MEMORY ID: " + msg.id + "-----")
     if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
         clearMemory(msg.id)
@@ -148,7 +143,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 msg = MessageReq(**msg)
 
                 if (msg.id not in agent_chains):
-                    SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id), WSHandler(websocket=websocket, session_id=msg.id)])
+                    SetupChatAgent(msg.id, [WSHandler(websocket=websocket, session_id=msg.id, user_q=msg.text)])
                     await websocket.send_json({
                         "result": "Enabled Tools: " + str(tool_names)
                     }) 
@@ -157,6 +152,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_json({
                     "result": response
                     }) 
+                history[msg.id].add_user_message(msg.text)
+                history[msg.id].add_ai_message(response)
+                print("------MEMORY ID: " + msg.id + "-----")
+                if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
+                    clearMemory(msg.id)
+                print("Conversation History: ")
+                print(agent_chains[msg.id].memory.buffer)
+                print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
                 
             except WebSocketDisconnect:
                 logging.info("websocket disconnect")
