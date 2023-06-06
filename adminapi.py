@@ -71,6 +71,17 @@ async def read_files(folder: str, subfolder: str):
         files.append(filename)
     return files
 
+@app.delete("/delete/{folder}/{subfolder}/{filename}")
+async def delete_file(folder: str, subfolder: str, filename: str):
+    file_location = f"./docs-data/{folder}/{subfolder}/{filename}"
+    if os.path.exists(file_location):
+        os.remove(file_location)
+        if not os.listdir(f"./docs-data/{folder}/{subfolder}"):
+            os.rmdir(f"./docs-data/{folder}/{subfolder}")
+        return {"message": f"{filename} has been deleted."}
+    else:
+        return {"error": f"{filename} does not exist."}
+
 @app.get("/readall")
 async def readall():
     files = []
