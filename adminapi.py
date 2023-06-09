@@ -86,7 +86,7 @@ async def delete_file(folder: str, subfolder: str, filename: str):
 async def readall():
     files = []
     for filename in os.listdir("./docs-data"):
-        if os.path.isdir(f"./docs-data/{filename}") and filename in ["txts", "pdfs", "csvs", "htmls", "urls", "markdowns"]:
+        if os.path.isdir(f"./docs-data/{filename}") and filename in ["txts", "pdfs", "words", "csvs", "htmls", "urls", "markdowns"]:
             for subfolder in os.listdir(f"./docs-data/{filename}"):
                 if os.path.isdir(f"./docs-data/{filename}/{subfolder}"):
                     files.append({"folder": filename, "subfolder": subfolder, "files": os.listdir(f"./docs-data/{filename}/{subfolder}")})

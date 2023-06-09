@@ -17,7 +17,7 @@ import logging
 
 # IMPORT TOOL START
 #from tools.bingsearchtool import bingsearchtool
-#from tools.shelltool import shelltool
+from tools.shelltool import shelltool
 #from tools.docsimport import docsimport
 #from tools.chatgptplugins import chatgptplugins
 #from tools.zapiertool import zapiertool
@@ -49,7 +49,7 @@ azchat=AzureChatOpenAI(
 
 # ADD TOOL START 
 #tools.extend(bingsearchtool())
-#tools.extend(shelltool())
+tools.extend(shelltool())
 #tools.extend(docsimport(azchat))
 #tools.extend(chatgptplugins())
 #tools.extend(zapiertool())
@@ -78,9 +78,9 @@ def SetupChatAgent(id, callbacks):
         max_token_limit=2500, 
         memory_key="chat_history", 
         return_messages=True) 
-    memories[id].save_context(
-        {"input": os.getenv("CHAT_SYSTEM_PROMPT")}, 
-        {"ouputs": "I will follow the instructions."}) 
+    # memories[id].save_context(
+    #     {"input": os.getenv("CHAT_SYSTEM_PROMPT")}, 
+    #     {"ouputs": "I will follow the instructions."}) 
     history[id] = PostgresChatMessageHistory(
         connection_string=f"postgresql://{postgresUser}:{postgresPassword}@{postgresHost}:{postgresPort}/chat_history", 
         session_id=str(id))
@@ -113,15 +113,15 @@ app.add_middleware(
 )
 
 def clearMemory(mid):
-    newMessage = str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nThe summary as below:\n" + agent_chains[mid].memory.predict_new_summary(agent_chains[mid].memory.buffer, agent_chains[mid].memory.moving_summary_buffer)
+    newMessage = "\nThe chat history summary as below:\n" + agent_chains[mid].memory.predict_new_summary(agent_chains[mid].memory.buffer, agent_chains[mid].memory.moving_summary_buffer)
     agent_chains[mid].memory.buffer.clear()
-    agent_chains[mid].memory.save_context({"input": newMessage}, {"ouputs": "OK, I will follow the instructions now."})
+    agent_chains[mid].memory.save_context({"input": newMessage}, {"ouputs": "OK, I will continue the conversation based on the chat history summary."})
 
 @app.post("/run")
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
-    response = agent_chains[msg.id].run(input=msg.text)
+    response = agent_chains[msg.id].run(input="Your setting: " + os.getenv("CHAT_SYSTEM_PROMPT") + "\nMe: " + msg.text)
     history[msg.id].add_user_message(msg.text)
     history[msg.id].add_ai_message(response)
     print("------MEMORY ID: " + msg.id + "-----")
@@ -148,7 +148,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "result": "Enabled Tools: " + str(tool_names)
                     }) 
 
-                response = await asyncio.create_task(agent_chains[msg.id].arun(msg.text))
+                response = await asyncio.create_task(agent_chains[msg.id].arun(input="Your setting: " + os.getenv("CHAT_SYSTEM_PROMPT") + "\nMe: " + msg.text))
                 await websocket.send_json({
                     "result": response
                     }) 
