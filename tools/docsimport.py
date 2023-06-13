@@ -1,6 +1,7 @@
 import os
 import fnmatch
-from langchain.document_loaders import UnstructuredWordDocumentLoader, UnstructuredExcelLoader, UnstructuredPowerPointLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredURLLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
+import aspose.words
+from langchain.document_loaders import UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -83,27 +84,17 @@ def importedPdfTools(llm):
             ))
     return tools
 
-def importedWordTools(llm):
-    tools = []
+def convertWordToTxt():
     for root, dirnames, filenames in os.walk('./docs-data/words'):
         if (os.path.basename(root) != "words"):
-            data = []
-            for filename in fnmatch.filter(filenames, '*.docx'):
-                loader = UnstructuredWordDocumentLoader(os.path.join(root, filename))
-                data += loader.load()
-            print("Embedding " + str(filenames))
-            doc_texts = text_splitter.split_documents(data)
-            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="worddocs")
-            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
-            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever(search_kwargs={"k": 1}))
-            tools.append(Tool(
-                name = os.path.basename(root),
-                func=doc.run,
-                coroutine=doc.arun,
-                description=f"useful for when you need to answer questions about {os.path.basename(root)}. Input should be a fully formed question.",
-                args_schema=DocsInput
-            ))
-    return tools
+            for filename in fnmatch.filter(filenames, '*.docx') + fnmatch.filter(filenames, '*.doc'):
+                doc_path = os.path.join(root, filename)
+                doc = aspose.words.Document(doc_path)
+                text = doc.get_text()
+                txt_path = doc_path.replace(".docx", ".txt").replace(".doc", ".txt").replace("words", "txts")
+                os.makedirs(os.path.dirname(txt_path), exist_ok=True)
+                with open(txt_path, 'w') as f:
+                    f.write(text)
 
 # def importedExcelTools(llm):
 #     tools = []
@@ -195,12 +186,10 @@ def importedCsvTools(llm):
 
 def docsimport(llm):
     tools = []
-    tools.extend(importedTxtTools(llm))
+    convertWordToTxt()
     tools.extend(importedCsvTools(llm))
-    # tools.extend(importedExcelTools(llm))
-    # tools.extend(importedPptTools(llm))
-    tools.extend(importedWordTools(llm))
     tools.extend(importedPdfTools(llm))
+    tools.extend(importedTxtTools(llm))
     tools.extend(importedHtmlTools(llm))
     tools.extend(importedMarkdownTools(llm))
     return tools

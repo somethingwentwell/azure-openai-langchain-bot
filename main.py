@@ -17,8 +17,8 @@ import logging
 
 # IMPORT TOOL START
 #from tools.bingsearchtool import bingsearchtool
-from tools.shelltool import shelltool
-#from tools.docsimport import docsimport
+#from tools.shelltool import shelltool
+from tools.docsimport import docsimport
 #from tools.chatgptplugins import chatgptplugins
 #from tools.zapiertool import zapiertool
 #from tools.customtools import customtools
@@ -49,8 +49,8 @@ azchat=AzureChatOpenAI(
 
 # ADD TOOL START 
 #tools.extend(bingsearchtool())
-tools.extend(shelltool())
-#tools.extend(docsimport(azchat))
+#tools.extend(shelltool())
+tools.extend(docsimport(azchat))
 #tools.extend(chatgptplugins())
 #tools.extend(zapiertool())
 #tools.extend(customtools()) 

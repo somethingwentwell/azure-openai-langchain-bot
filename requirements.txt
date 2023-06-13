@@ -20,3 +20,5 @@ pdf2image
 typing
 python-multipart
 docx2txt
+aspose-words
+playwright

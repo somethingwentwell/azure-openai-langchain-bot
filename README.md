@@ -13,7 +13,13 @@ To run this chatbot, you will need the following:
 
 1. Clone this repository to your local machine.
 
-2. Set up the environment variables in a `.env` file. You can copy the `.env.example` file and rename it to `.env`, then replace the placeholders with your own API key and bot token.
+2. Build the Docker image:
+
+```
+docker buildx build --platform linux/amd64 --no-cache  -t langchain-base-image .
+```
+
+3. Set up the environment variables in a `.env` file. You can copy the `.env.example` file and rename it to `.env`, then replace the placeholders with your own API key and bot token.
 
 ```
 MicrosoftAppType=MultiTenant
@@ -41,7 +47,7 @@ LC_API_URL=http://host.docker.internal/run
 
 Make sure to keep the `.env` file private and do not commit it to version control.
 
-3. Docker-compose with latest image:
+4. Docker-compose with latest image:
 ```
 docker-compose -f docker-compose-db.yml up
 docker-compose up
@@ -51,7 +57,7 @@ or
 python -m uvicorn main:app --reload --port 8000
 ```
 
-4. Test the API:
+5. Test the API:
 ```
 curl --location --request POST 'http://127.0.0.1:80/run' \
 --header 'Content-Type: application/json' \
