@@ -1,7 +1,7 @@
 import os
 import fnmatch
 import aspose.words
-from langchain.document_loaders import UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
+from langchain.document_loaders import PyPDFLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -68,7 +68,8 @@ def importedPdfTools(llm):
         if (os.path.basename(root) != "pdfs"):
             data = []
             for filename in fnmatch.filter(filenames, '*.pdf'):
-                loader = UnstructuredPDFLoader(os.path.join(root, filename), mode="elements")
+                # loader = UnstructuredPDFLoader(os.path.join(root, filename), mode="elements")
+                loader = PyPDFLoader(os.path.join(root, filename))
                 data += loader.load()
             print("Embedding " + str(filenames))
             doc_texts = text_splitter.split_documents(data)

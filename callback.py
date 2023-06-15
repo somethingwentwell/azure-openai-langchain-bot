@@ -17,8 +17,13 @@ class WSHandler(AsyncCallbackHandler):
 
     async def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
         """Run on agent action."""
-        log(self.session_id, self.user_q, "on_agent_action", json.dumps(action))
-        actionJson = json.loads(json.dumps(action))
+        obj = {
+            "tool": action.tool,
+            "tool_input": json.dumps(action.tool_input),
+            "log": action.log
+        }
+        actionJson = json.dumps(obj)
+        log(self.session_id, self.user_q, "on_agent_action", actionJson)
         await self.websocket.send_json({
             "callback": "on_agent_action",
             "thought": actionJson
