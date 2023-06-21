@@ -20,7 +20,7 @@ import logging
 #from tools.shelltool import shelltool
 #from tools.docsimport import docsimport
 #from tools.chatgptplugins import chatgptplugins
-#from tools.aoaiondatatool import aoaiondatatool
+from tools.aoaiondatatool import aoaiondatatool
 #from tools.zapiertool import zapiertool
 #from tools.customtools import customtools
 # IMPORT TOOL END
@@ -53,7 +53,7 @@ azchat=AzureChatOpenAI(
 #tools.extend(shelltool())
 #tools.extend(docsimport(azchat))
 #tools.extend(chatgptplugins())
-#tools.extend(aoaiondatatool())
+tools.extend(aoaiondatatool())
 #tools.extend(zapiertool())
 #tools.extend(customtools()) 
 # ADD TOOL END
