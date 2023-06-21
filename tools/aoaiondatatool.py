@@ -47,11 +47,14 @@ def aoai_on_data_search(question):
             docs = ""
             i = 1
             for citation in citations:
-                doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
-                docs = docs + doc
+                # doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
+                ref = "doc" + str(i)
+                if (ref in response_json['choices'][0]['messages'][1]['content']):
+                    doc = f"<a href='{citation['url']}'>[doc{str(i)}: {citation['filepath']}]</a><br>"
+                    docs = docs + doc
                 i = i + 1
             
-            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>***Citations:*** {str(docs)}"
+            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>{str(docs)}"
 
             return newOutput
                     
@@ -96,19 +99,22 @@ async def async_aoai_on_data_search(question):
                             
                             print(response_json)
 
+
                             citations = json.loads(response_json["choices"][0]["messages"][0]["content"])["citations"]
                             docs = ""
                             i = 1
                             for citation in citations:
-                                doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
-                                docs = docs + doc
+                                # doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
+                                ref = "doc" + str(i)
+                                if (ref in response_json['choices'][0]['messages'][1]['content']):
+                                    doc = f"<a href='{citation['url']}'>[doc{str(i)}: {citation['filepath']}]</a><br>"
+                                    docs = docs + doc
                                 i = i + 1
-                            
-                            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>***Citations:*** {str(docs)}"
-
+                    
+                            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>{str(docs)}"
 
                             return newOutput
-                    
+
         except Exception as e:
                 print(f"Error: {e}")
                 return f"Error: {e}"
