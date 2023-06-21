@@ -18,8 +18,9 @@ import logging
 # IMPORT TOOL START
 #from tools.bingsearchtool import bingsearchtool
 #from tools.shelltool import shelltool
-from tools.docsimport import docsimport
+#from tools.docsimport import docsimport
 #from tools.chatgptplugins import chatgptplugins
+#from tools.aoaiondatatool import aoaiondatatool
 #from tools.zapiertool import zapiertool
 #from tools.customtools import customtools
 # IMPORT TOOL END
@@ -50,8 +51,9 @@ azchat=AzureChatOpenAI(
 # ADD TOOL START 
 #tools.extend(bingsearchtool())
 #tools.extend(shelltool())
-tools.extend(docsimport(azchat))
+#tools.extend(docsimport(azchat))
 #tools.extend(chatgptplugins())
+#tools.extend(aoaiondatatool())
 #tools.extend(zapiertool())
 #tools.extend(customtools()) 
 # ADD TOOL END
@@ -121,7 +123,7 @@ def clearMemory(mid):
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
-    response = agent_chains[msg.id].run(input="Your setting: " + os.getenv("CHAT_SYSTEM_PROMPT") + "\nMe: " + msg.text)
+    response = agent_chains[msg.id].run(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n")
     history[msg.id].add_user_message(msg.text)
     history[msg.id].add_ai_message(response)
     print("------MEMORY ID: " + msg.id + "-----")
@@ -148,7 +150,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "result": "Enabled Tools: " + str(tool_names)
                     }) 
 
-                response = await asyncio.create_task(agent_chains[msg.id].arun(input="Your setting: " + os.getenv("CHAT_SYSTEM_PROMPT") + "\nMe: " + msg.text))
+                response = await asyncio.create_task(agent_chains[msg.id].arun(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n"))
                 await websocket.send_json({
                     "result": response
                     }) 
