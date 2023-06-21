@@ -16,7 +16,7 @@ def aoai_on_data_search(question):
                 {
                 "type": "AzureCognitiveSearch",
                 "parameters": {
-                    "endpoint": "https://teccogsearchs.search.windows.net",
+                    "endpoint": str(os.getenv("AZURE_COGNITIVE_SEARCH_URL")),
                     "key": str(os.getenv("AZURE_COGNITIVE_SEARCH_KEY")),
                     "indexName": str(os.getenv("AZURE_COGNITIVE_SEARCH_INDEX_NAME"))
                 }
@@ -68,7 +68,7 @@ async def async_aoai_on_data_search(question):
                 {
                 "type": "AzureCognitiveSearch",
                 "parameters": {
-                    "endpoint": f"https://teccogsearchs.search.windows.net",
+                    "endpoint": str(os.getenv("AZURE_COGNITIVE_SEARCH_URL")),
                     "key": str(os.getenv("AZURE_COGNITIVE_SEARCH_KEY")),
                     "indexName": str(os.getenv("AZURE_COGNITIVE_SEARCH_INDEX_NAME"))
                 }
@@ -118,7 +118,7 @@ def AOAIDataSearch():
     tools.append(Tool(
         name = "Azure OpenAI on Data Search",
         func=aoai_on_data_search,
-        description=f"useful for when you need to answer questions about {str(os.getenv('AZURE_COGNITIVE_SEARCH_INDEX_NAME'))}. Input should be a fully formed question.",
+        description=str(os.getenv("AZURE_COGNITIVE_SEARCH_DESC")),
         return_direct=True
     ))
     return tools
@@ -128,7 +128,7 @@ def AAOAIDataSearch():
     tools.append(Tool(
         name = "Azure OpenAI on Data Search",
         func=aoai_on_data_search,
-        description=f"useful for when you need to answer questions about {str(os.getenv('AZURE_COGNITIVE_SEARCH_INDEX_NAME'))}. Input should be a fully formed question.",
+        description=str(os.getenv("AZURE_COGNITIVE_SEARCH_DESC")),
         coroutine=async_aoai_on_data_search,
         return_direct=True
     ))
