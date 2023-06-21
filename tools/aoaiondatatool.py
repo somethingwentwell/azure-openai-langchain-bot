@@ -5,7 +5,8 @@ import aiohttp
 import requests
 import json
 
-load_dotenv()
+BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+load_dotenv(os.path.join(BASEDIR, '.env'), override=True)
 
 def aoai_on_data_search(question):
         try:

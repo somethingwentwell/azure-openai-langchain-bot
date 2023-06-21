@@ -37,6 +37,7 @@ services:
     volumes:
       - ./docs-data:/app/docs-data
       - ./tools:/app/tools
+      - ./.env:/app/.env
       - ./main.py:/app/main.py
       - ./callback.py:/app/callback.py
     networks:

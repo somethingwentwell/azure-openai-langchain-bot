@@ -25,7 +25,7 @@ from tools.aoaiondatatool import aoaiondatatool
 #from tools.customtools import customtools
 # IMPORT TOOL END
 
-load_dotenv()
+load_dotenv(".env", override=True)
 
 memories = {}
 history = {}
@@ -180,4 +180,4 @@ def get_tools():
         tool_list.append(tool_dict)
     return {"tools": tool_list}
 
-# RESTART: 900a5903-270b-43b8-8716-0ab9fcb48685
+# RESTART: 4a3e4d72-95d5-4e08-b288-bbcbbc14c2a5
