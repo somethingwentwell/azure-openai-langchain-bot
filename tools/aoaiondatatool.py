@@ -44,14 +44,14 @@ def aoai_on_data_search(question):
             print(response_json)
 
             citations = json.loads(response_json["choices"][0]["messages"][0]["content"])["citations"]
-            docs = []
-            i = 0
+            docs = ""
+            i = 1
             for citation in citations:
-                doc = f"doc{str(i)} ({citation['filepath']}): {citation['content'][:50]}..."
-                docs.append(doc)
+                doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
+                docs = docs + doc
                 i = i + 1
-
-            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}***Citations: {str(docs)}***"
+            
+            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>***Citations:*** {str(docs)}"
 
             return newOutput
                     
@@ -97,14 +97,15 @@ async def async_aoai_on_data_search(question):
                             print(response_json)
 
                             citations = json.loads(response_json["choices"][0]["messages"][0]["content"])["citations"]
-                            docs = []
-                            i = 0
+                            docs = ""
+                            i = 1
                             for citation in citations:
-                                doc = f"doc{str(i)} ({citation['filepath']}): {citation['content'][:50]}..."
-                                docs.append(doc)
+                                doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
+                                docs = docs + doc
                                 i = i + 1
                             
-                            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}***Citations: {str(docs)}***"
+                            newOutput = f"{response_json['choices'][0]['messages'][1]['content']}<br><br>***Citations:*** {str(docs)}"
+
 
                             return newOutput
                     
