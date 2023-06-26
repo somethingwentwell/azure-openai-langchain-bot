@@ -1,0 +1,13 @@
+- Create a streamlit app that takes 3 inputs:                
+1. English quiz type (grammar, vocab)                
+2. Level (primary school 1-6)                
+3. Number of questions                
+            
+Create a submit button that puts these 3 input values to REST API post to http://localhost:8000/run with the following body format:                
+{                
+  "id": "1",                
+  "text": "Create <Number of questions><English quiz type> quizzes in level <Level>. You must reply me the questions and answers in markdown format."                
+}              
+            
+- Show the response.result as markdown format  
+- Add a download button to download the markdown in streamlit

@@ -50,7 +50,7 @@ def aoai_on_data_search(question):
                 # doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
                 ref = "doc" + str(i)
                 if (ref in response_json['choices'][0]['messages'][1]['content']):
-                    doc = f"<a href='{citation['url']}'>[doc{str(i)}: {citation['filepath']}]</a><br>"
+                    doc = f"<a href='{citation['url']}' title='{citation['content']}'><button style='background-color: #4CAF50; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer;'>doc{str(i)}: {citation['filepath']}</button></a><br>"
                     docs = docs + doc
                 i = i + 1
             
@@ -107,7 +107,7 @@ async def async_aoai_on_data_search(question):
                                 # doc = f"<br>doc{str(i)} ({citation['filepath']}): <br>{citation['content'][:200]}...<br>"
                                 ref = "doc" + str(i)
                                 if (ref in response_json['choices'][0]['messages'][1]['content']):
-                                    doc = f"<a href='{citation['url']}'>[doc{str(i)}: {citation['filepath']}]</a><br>"
+                                    doc = f"<a href='{citation['url']}' title='{citation['content']}'><button style='background-color: #4CAF50; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer;'>doc{str(i)}: {citation['filepath']}</button></a><br>"
                                     docs = docs + doc
                                 i = i + 1
                     

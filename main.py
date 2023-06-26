@@ -16,11 +16,12 @@ import logging
 #from tools.azurecognitivesearchtool import azurecognitivesearchtool
 
 # IMPORT TOOL START
+from tools.directgpt import directgpt
 #from tools.bingsearchtool import bingsearchtool
 #from tools.shelltool import shelltool
 #from tools.docsimport import docsimport
 #from tools.chatgptplugins import chatgptplugins
-from tools.aoaiondatatool import aoaiondatatool
+#from tools.aoaiondatatool import aoaiondatatool
 #from tools.zapiertool import zapiertool
 #from tools.customtools import customtools
 # IMPORT TOOL END
@@ -49,11 +50,12 @@ azchat=AzureChatOpenAI(
 #tools.extend(azurecognitivesearchtool())
 
 # ADD TOOL START 
+tools.extend(directgpt())
 #tools.extend(bingsearchtool())
 #tools.extend(shelltool())
 #tools.extend(docsimport(azchat))
 #tools.extend(chatgptplugins())
-tools.extend(aoaiondatatool())
+#tools.extend(aoaiondatatool())
 #tools.extend(zapiertool())
 #tools.extend(customtools()) 
 # ADD TOOL END
@@ -180,4 +182,4 @@ def get_tools():
         tool_list.append(tool_dict)
     return {"tools": tool_list}
 
-# RESTART: 4a3e4d72-95d5-4e08-b288-bbcbbc14c2a5
+# RESTART: 98e693d7-6f31-4514-9659-df0f0298a049

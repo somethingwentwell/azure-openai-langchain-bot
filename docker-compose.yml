@@ -70,6 +70,17 @@ services:
       - "host.docker.internal:host-gateway"
     deploy:
       replicas: 1
+  streamlit:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run example.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit:/app
   # openai-teams-bot:
   #   environment:
   #     - DOCKER_DEFAULT_PLATFORM=linux/amd64
