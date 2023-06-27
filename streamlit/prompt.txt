@@ -1,3 +1,5 @@
+### example.py
+
 - Create a streamlit app that takes 3 inputs:                
 1. English quiz type (grammar, vocab)                
 2. Level (primary school 1-6)                
@@ -11,3 +13,8 @@ Create a submit button that puts these 3 input values to REST API post to http:/
             
 - Show the response.result as markdown format  
 - Add a download button to download the markdown in streamlit
+
+
+### azure_ocr.py
+
+create a streamlit app to upload image and ocr the image using Azure cognitive service with python request

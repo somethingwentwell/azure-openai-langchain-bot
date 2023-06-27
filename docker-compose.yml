@@ -70,13 +70,16 @@ services:
       - "host.docker.internal:host-gateway"
     deploy:
       replicas: 1
+
   streamlit:
     image: warching/streamlit
     command:
       - /bin/bash
       - -c
       - |
-          streamlit run example.py --server.port=8501 --server.address=0.0.0.0
+          streamlit run azure_ocr.py --server.port=8501 --server.address=0.0.0.0
+    env_file:
+      - .env
     ports:
       - "8501:8501"
     volumes:
