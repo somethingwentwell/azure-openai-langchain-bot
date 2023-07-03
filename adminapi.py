@@ -50,7 +50,7 @@ async def get_messages(session_id: str) -> JSONResponse:
 @app.get("/session_ids")
 async def get_all_session_ids() -> JSONResponse:
     cur = conn.cursor()
-    cur.execute("SELECT DISTINCT session_id FROM public.agent_log")
+    cur.execute("SELECT DISTINCT session_id FROM public.message_store")
     rows = cur.fetchall()
     cur.close()
     session_ids = [row[0] for row in rows]

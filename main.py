@@ -10,13 +10,14 @@ from dotenv import load_dotenv
 import asyncio 
 import os
 import logging
+from tools.directgpt import aoai, async_aoai
 
 #from tools.duckduckgosearchtool import duckduckgosearchtool
 #from tools.pythontool import pythontool
 #from tools.azurecognitivesearchtool import azurecognitivesearchtool
+#from tools.directgpt import directgpt
 
 # IMPORT TOOL START
-from tools.directgpt import directgpt
 #from tools.bingsearchtool import bingsearchtool
 #from tools.shelltool import shelltool
 #from tools.docsimport import docsimport
@@ -48,9 +49,9 @@ azchat=AzureChatOpenAI(
 #tools.extend(duckduckgosearchtool())
 #tools.extend(pythontool())
 #tools.extend(azurecognitivesearchtool())
+#tools.extend(directgpt())
 
 # ADD TOOL START 
-tools.extend(directgpt())
 #tools.extend(bingsearchtool())
 #tools.extend(shelltool())
 #tools.extend(docsimport(azchat))
@@ -66,38 +67,36 @@ agent_type_str = str(os.getenv("AGENT_TYPE"))
 agent_type = {
     "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
     "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION
+    "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    "DIRECT_GPT": "direct_gpt",
 }.get(agent_type_str, None)
 if agent_type is None:
     raise ValueError(f"Invalid agent type: {agent_type_str}")
 
 def SetupChatAgent(id, callbacks):
-    # memories[id] = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     postgresUser = str(os.getenv("POSTGRES_USER"))
     postgresPassword = str(os.getenv("POSTGRES_PASSWORD"))
     postgresHost = str(os.getenv("POSTGRES_HOST"))
     postgresPort = str(os.getenv("POSTGRES_PORT"))
-    memories[id] = ConversationSummaryBufferMemory(
-        llm=azchat, 
-        max_token_limit=2500, 
-        memory_key="chat_history", 
-        return_messages=True) 
-    # memories[id].save_context(
-    #     {"input": os.getenv("CHAT_SYSTEM_PROMPT")}, 
-    #     {"ouputs": "I will follow the instructions."}) 
     history[id] = PostgresChatMessageHistory(
         connection_string=f"postgresql://{postgresUser}:{postgresPassword}@{postgresHost}:{postgresPort}/chat_history", 
         session_id=str(id))
-    agent_chains[id] = initialize_agent(
-        tools,
-        azchat, 
-        agent=agent_type,
-        verbose=True, 
-        memory=memories[id], 
-        handle_parsing_errors=True,
-        max_iterations=10, 
-        early_stopping_method="generate",
-        callbacks=callbacks)
+    if (str(os.getenv("AGENT_TYPE")) != "DIRECT_GPT"):
+        memories[id] = ConversationSummaryBufferMemory(
+            llm=azchat, 
+            max_token_limit=2500, 
+            memory_key="chat_history", 
+            return_messages=True) 
+        agent_chains[id] = initialize_agent(
+            tools,
+            azchat, 
+            agent=agent_type,
+            verbose=True, 
+            memory=memories[id], 
+            handle_parsing_errors=True,
+            max_iterations=3, 
+            early_stopping_method="generate",
+            callbacks=callbacks)
 
 class MessageReq(BaseModel):
     id: str
@@ -125,16 +124,20 @@ def clearMemory(mid):
 def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
-    response = agent_chains[msg.id].run(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n")
+    if (str(os.getenv("AGENT_TYPE")) == "DIRECT_GPT"):
+        response = aoai(msg.text)
+    else:
+        response = agent_chains[msg.id].run(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n")
+        # history[msg.id].add_user_message(msg.text)
+        # history[msg.id].add_ai_message(response)
+        print("------MEMORY ID: " + msg.id + "-----")
+        if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
+            clearMemory(msg.id)
+        print("Conversation History: ")
+        print(agent_chains[msg.id].memory.buffer)
+        print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
     history[msg.id].add_user_message(msg.text)
     history[msg.id].add_ai_message(response)
-    print("------MEMORY ID: " + msg.id + "-----")
-    if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
-        clearMemory(msg.id)
-    print("Conversation History: ")
-    print(agent_chains[msg.id].memory.buffer)
-    print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
-
     result = MessageRes(result=response)
     return result
 
@@ -152,18 +155,23 @@ async def websocket_endpoint(websocket: WebSocket):
                         "result": "Enabled Tools: " + str(tool_names)
                     }) 
 
-                response = await asyncio.create_task(agent_chains[msg.id].arun(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n"))
+                if (str(os.getenv("AGENT_TYPE")) == "DIRECT_GPT"):
+                    response = await asyncio.create_task(async_aoai(msg.text))
+                else:
+                    response = await asyncio.create_task(agent_chains[msg.id].arun(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n"))
+                    print("------MEMORY ID: " + msg.id + "-----")
+                    if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
+                        clearMemory(msg.id)
+                    print("Conversation History: ")
+                    print(agent_chains[msg.id].memory.buffer)
+                    print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
+
+                history[msg.id].add_user_message(msg.text)
+                history[msg.id].add_ai_message(response)
+
                 await websocket.send_json({
                     "result": response
                     }) 
-                history[msg.id].add_user_message(msg.text)
-                history[msg.id].add_ai_message(response)
-                print("------MEMORY ID: " + msg.id + "-----")
-                if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
-                    clearMemory(msg.id)
-                print("Conversation History: ")
-                print(agent_chains[msg.id].memory.buffer)
-                print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
                 
             except WebSocketDisconnect:
                 logging.info("websocket disconnect")
@@ -182,4 +190,4 @@ def get_tools():
         tool_list.append(tool_dict)
     return {"tools": tool_list}
 
-# RESTART: 98e693d7-6f31-4514-9659-df0f0298a049
+# RESTART: 7ccef60c-35e9-423e-9a36-abe6addc06d3

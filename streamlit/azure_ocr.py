@@ -1,10 +1,17 @@
+# create a streamlit app with the following requirement:  
+# 1. upload image or pdf then ocr the uploaded file using Azure cognitive service with python requests using environment variable AZURE_COGNITIVE_SERVICES_KEY and AZURE_COGNITIVE_SERVICES_EP  
+# 2. After getting the OCR response, request http://localhost:8000/run with the following JSON {  
+#   "id": "ws",  
+#   "text": "Extract Date, From address, From phone number, To address, To phone number, order items, total from the OCR scanned text: <THE OCR RESULT>"  
+# }  
+# 3. Show the extracted text from the API response 
+
 import streamlit as st  
 import requests  
-import os  
   
-# Set subscription key and endpoint for Azure Cognitive Services API using environment variables  
-subscription_key = os.environ['AZURE_COGNITIVE_SERVICES_KEY']  
-endpoint = os.environ['AZURE_COGNITIVE_SERVICES_EP']  
+# Set subscription key and endpoint for Azure Cognitive Services API  
+subscription_key = ""  
+endpoint = "https://teccognitiveservices.cognitiveservices.azure.com/"  
   
 # Set API endpoint for OCR service  
 ocr_url = endpoint + "vision/v3.0/ocr"  
@@ -16,6 +23,19 @@ def ocr(image_file):
     response.raise_for_status()  
     analysis = response.json()  
     return analysis  
+
+def send_to_api(ocr_result):  
+    url = "http://localhost:8000/run"  
+  
+    payload = {  
+        "id": "ws",  
+        "text": f'Extract Date, From address, From phone number, To address, To phone number, order items, total as markdown list from the OCR scanned text: "{ocr_result}"',  
+    }  
+  
+    response = requests.post(url, json=payload)  
+    response.raise_for_status()  
+  
+    return response.json()  
   
 # Set up the Streamlit app  
 st.title("OCR with Azure Cognitive Services")  
@@ -34,3 +54,6 @@ if image_file is not None:
                 text += word['text'] + " "  
     st.header("OCR Result")  
     st.write(text)  
+    api_response = send_to_api(text) 
+    st.header("Extracted Text:")  
+    st.write(api_response['result'])  

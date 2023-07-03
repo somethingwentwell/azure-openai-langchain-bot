@@ -66,7 +66,7 @@ def aoai_on_data_search(question):
 async def async_aoai_on_data_search(question):
         try:
             url = "https://tecopenai.openai.azure.com/openai/deployments/gpt-35-turbo/extensions/chat/completions?api-version=2023-06-01-preview"
-
+   
             payload = json.dumps({
             "dataSources": [
                 {

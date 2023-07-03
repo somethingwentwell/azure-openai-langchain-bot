@@ -11,7 +11,6 @@ load_dotenv(os.path.join(BASEDIR, '.env'), override=True)
 def aoai(question):
         try:
             url = f"{str(os.getenv('OPENAI_API_BASE'))}/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview"
-
             payload = json.dumps({
             "messages": [
                 {
@@ -28,9 +27,6 @@ def aoai(question):
 
             response = requests.post(url, headers=headers, data=payload)
             response_json = response.json()
-
-            print(response_json)
-
             return response_json["choices"][0]["message"]["content"]
                     
         except Exception as e:
@@ -59,9 +55,6 @@ async def async_aoai(question):
             async with aiohttp.ClientSession() as session:
                     async with session.post(url, headers=headers, data=payload) as response:
                             response_json = await response.json()
-                            
-                            print(response_json)
-
                             return response_json["choices"][0]["message"]["content"]
 
         except Exception as e:
@@ -75,8 +68,7 @@ def AOAI():
     tools.append(Tool(
         name = "Direct call Azure OpenAI",
         func=aoai,
-        description="Useful for when you need to answer questions using OpenAI. You must not amend user's question and input it as string directly.",
-        return_direct=True
+        description="Useful for when you need to answer questions using OpenAI. Input must be the exact same text as user's ask.",
     ))
     return tools
 
@@ -85,9 +77,8 @@ def AAOAI():
     tools.append(Tool(
         name = "Direct call Azure OpenAI",
         func=aoai,
-        description="Useful for when you need to answer questions using OpenAI. You must not amend user's question and input it as string directly.",
+        description="Useful for when you need to answer questions using OpenAI. Input must be the exact same text as user's ask.",
         coroutine=async_aoai,
-        return_direct=True
     ))
     return tools
 
