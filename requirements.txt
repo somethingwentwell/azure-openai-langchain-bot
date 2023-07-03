@@ -1,6 +1,6 @@
 fastapi
 pydantic
-langchain~=0.0.200
+langchain~=0.0.221
 python-dotenv
 openai
 markdown
@@ -23,3 +23,6 @@ docx2txt
 aspose-words
 playwright
 pypdf
+azure-ai-formrecognizer
+azure-cognitiveservices-speech
+azure-ai-vision

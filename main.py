@@ -14,8 +14,8 @@ from tools.directgpt import aoai, async_aoai
 
 #from tools.duckduckgosearchtool import duckduckgosearchtool
 #from tools.pythontool import pythontool
-#from tools.azurecognitivesearchtool import azurecognitivesearchtool
 #from tools.directgpt import directgpt
+#from tools.azurecognitiveservices import azurecognitiveservices
 
 # IMPORT TOOL START
 #from tools.bingsearchtool import bingsearchtool
@@ -48,8 +48,8 @@ azchat=AzureChatOpenAI(
 
 #tools.extend(duckduckgosearchtool())
 #tools.extend(pythontool())
-#tools.extend(azurecognitivesearchtool())
 #tools.extend(directgpt())
+#tools.extend(azurecognitiveservices())
 
 # ADD TOOL START 
 #tools.extend(bingsearchtool())
@@ -68,6 +68,8 @@ agent_type = {
     "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
     "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
     "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    "OPENAI_FUNCTIONS": AgentType.OPENAI_FUNCTIONS,
+    "OPENAI_MULTI_FUNCTIONS": AgentType.OPENAI_MULTI_FUNCTIONS,
     "DIRECT_GPT": "direct_gpt",
 }.get(agent_type_str, None)
 if agent_type is None:
@@ -81,7 +83,9 @@ def SetupChatAgent(id, callbacks):
     history[id] = PostgresChatMessageHistory(
         connection_string=f"postgresql://{postgresUser}:{postgresPassword}@{postgresHost}:{postgresPort}/chat_history", 
         session_id=str(id))
-    if (str(os.getenv("AGENT_TYPE")) != "DIRECT_GPT"):
+    if (str(os.getenv("AGENT_TYPE")) == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
+        str(os.getenv("AGENT_TYPE")) == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
+        str(os.getenv("AGENT_TYPE")) == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
         memories[id] = ConversationSummaryBufferMemory(
             llm=azchat, 
             max_token_limit=2500, 
