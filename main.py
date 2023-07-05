@@ -13,7 +13,7 @@ import os
 import logging
 from tools.direct_gpt import aoai, async_aoai
 from agents.simple_memory_agent import SimpleMemoryAgent
-from features.token_handler import log_token
+from features.token_handler import log_token, get_token, get_total_tokens
 
 
 #from tools.duckduckgo_search import duckduckgo_search
@@ -24,7 +24,7 @@ from features.token_handler import log_token
 # IMPORT TOOL START
 #from tools.bing_search import bing_search
 #from tools.shell import shell
-from tools.document_import import document_import
+#from tools.document_import import document_import
 #from tools.chatgpt_plugins import chatgpt_plugins
 #from tools.aoai_on_data import aoai_on_data
 #from tools.zapier import zapier
@@ -59,7 +59,7 @@ azchat=AzureChatOpenAI(
 # ADD TOOL START 
 #tools.extend(bing_search())
 #tools.extend(shell())
-tools.extend(document_import(azchat))
+#tools.extend(document_import(azchat))
 #tools.extend(chatgpt_plugins())
 #tools.extend(aoai_on_data())
 #tools.extend(zapier())
@@ -148,7 +148,7 @@ def clearMemory(mid):
     agent_chains[mid].memory.save_context({"input": newMessage}, {"ouputs": "OK, I will continue the conversation based on the chat history summary."})
 
 @app.post("/run")
-def run(msg: MessageReq):
+async def run(msg: MessageReq):
     if (msg.id not in agent_chains):
         SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
     try:
@@ -177,6 +177,17 @@ def run(msg: MessageReq):
     history[msg.id].add_ai_message(response)
     result = MessageRes(result=response)
     return result
+
+@app.post("/limit_run")
+async def limit_run(msg: MessageReq):
+    print("TOTAL TOKENS: " + str(get_total_tokens()))
+    print("TOTAL TOKENS: " + str(get_token(msg.id)))
+    if (get_total_tokens() > int(str(os.getenv("TOTAL_TOKEN_LIMIT")))):
+        return MessageRes(result="[ALERT] Total token limit reached. Please contact admin.")
+    elif (get_token(msg.id) > int(str(os.getenv("TOTAL_TOKEN_LIMIT_PER_USER")))):
+        return MessageRes(result="[ALERT] User token limit reached. Please contact admin.")
+    else:
+        return await run(msg)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
