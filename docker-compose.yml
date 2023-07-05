@@ -37,9 +37,10 @@ services:
     volumes:
       - ./docs-data:/app/docs-data
       - ./tools:/app/tools
+      - ./agents:/app/agents
+      - ./features:/app/features
       - ./.env:/app/.env
       - ./main.py:/app/main.py
-      - ./callback.py:/app/callback.py
     networks:
       - langchain-network
     extra_hosts:

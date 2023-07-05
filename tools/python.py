@@ -16,7 +16,7 @@ def PythonTool():
     ))
     return tools
 
-def pythontool():
+def python():
     tools = []
     tools.extend(PythonTool())
     return tools

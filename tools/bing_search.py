@@ -38,7 +38,7 @@ def BingTool():
     ))
     return tools
 
-def bingsearchtool():
+def bing_search():
     tools = []
     tools.extend(BingTool())
     return tools

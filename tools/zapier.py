@@ -46,7 +46,7 @@ def ZapierTool():
     ))
     return tools
 
-def zapiertool():
+def zapier():
     tools = []
     tools.extend(ZapierTool())
     return tools

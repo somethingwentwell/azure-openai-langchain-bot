@@ -9,3 +9,8 @@ CREATE TABLE agent_log (
   callback_type VARCHAR(255) NOT NULL,
   log JSON NOT NULL
 );
+
+CREATE TABLE token_count (
+  session_id VARCHAR(255)PRIMARY KEY,
+  used_token NUMERIC NOT NULL
+);

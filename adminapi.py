@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import FastAPI, File, UploadFile, Request
 from typing import Optional
 from pydantic import BaseModel
@@ -86,7 +87,7 @@ async def delete_file(folder: str, subfolder: str, filename: str):
 async def readall():
     files = []
     for filename in os.listdir("./docs-data"):
-        if os.path.isdir(f"./docs-data/{filename}") and filename in ["txts", "pdfs", "words", "csvs", "htmls", "urls", "markdowns"]:
+        if os.path.isdir(f"./docs-data/{filename}") and filename in ["txts", "pdfs", "words", "csvs", "htmls", "urls", "markdowns", "xmls"]:
             for subfolder in os.listdir(f"./docs-data/{filename}"):
                 if os.path.isdir(f"./docs-data/{filename}/{subfolder}"):
                     files.append({"folder": filename, "subfolder": subfolder, "files": os.listdir(f"./docs-data/{filename}/{subfolder}")})
@@ -317,3 +318,63 @@ async def check_tools(server: ChatServer):
             return {"status": "Not Ready"}
     except:
         return {"status": "Not Ready"}
+
+@app.get("/all_token_used")
+async def all_token_used() -> JSONResponse:
+    cur = conn.cursor()
+    cur.execute("SELECT SUM(used_token) FROM public.token_count")
+    rows = cur.fetchall()
+    cur.close()
+    
+    res = {
+            "all_token_used": str(rows[0][0])
+        }
+
+    return JSONResponse(content=res)
+
+@app.get("/token_count")
+async def total_token_count() -> JSONResponse:
+    cur = conn.cursor()
+    cur.execute(f"SELECT session_id, used_token FROM public.token_count")
+    rows = cur.fetchall()
+    cur.close()
+
+    json_rows = []
+    for row in rows:
+        json_rows.append({
+            "session_id": row[0],
+            "used_token": str(row[1])
+        })
+    
+    return JSONResponse(content=json_rows)
+
+@app.get("/token_count/{session_id}")
+async def token_count(session_id: str) -> JSONResponse:
+    cur = conn.cursor()
+    cur.execute(f"SELECT session_id, used_token FROM public.token_count WHERE session_id='{session_id}'")
+    rows = cur.fetchall()
+    cur.close()
+    
+    res = {
+            "used_token": str(rows[0][1])
+        }
+    
+    return JSONResponse(content=res)
+
+@app.put("/reset_token/{session_id}")
+async def reset_token(session_id: str) -> JSONResponse:
+    cur = conn.cursor()
+    cur.execute(f"UPDATE public.token_count SET used_token = 0 WHERE session_id='{session_id}'")
+    conn.commit()
+    cur.close()
+    
+    return JSONResponse(content={"status": "success"})
+
+@app.put("/reset_token")
+async def reset_all_token() -> JSONResponse:
+    cur = conn.cursor()
+    cur.execute(f"UPDATE public.token_count SET used_token = 0")
+    conn.commit()
+    cur.close()
+    
+    return JSONResponse(content={"status": "success"})

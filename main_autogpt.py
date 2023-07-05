@@ -16,8 +16,8 @@ import faiss
 # IMPORT TOOL START
 # from tools.docsimport import docsimport
 #from tools.zapiertool import zapiertool
-from tools.customtools import customtools
-from tools.pythontool import pythontool
+from custom_tools import customtools
+from python import pythontool
 # IMPORT TOOL END
 
 load_dotenv()
