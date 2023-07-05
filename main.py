@@ -180,14 +180,15 @@ async def run(msg: MessageReq):
 
 @app.post("/limit_run")
 async def limit_run(msg: MessageReq):
-    print("TOTAL TOKENS: " + str(get_total_tokens()))
-    print("TOTAL TOKENS: " + str(get_token(msg.id)))
-    if (get_total_tokens() > int(str(os.getenv("TOTAL_TOKEN_LIMIT")))):
-        return MessageRes(result="[ALERT] Total token limit reached. Please contact admin.")
-    elif (get_token(msg.id) > int(str(os.getenv("TOTAL_TOKEN_LIMIT_PER_USER")))):
-        return MessageRes(result="[ALERT] User token limit reached. Please contact admin.")
-    else:
-        return await run(msg)
+    try:
+        if (get_total_tokens() > int(str(os.getenv("TOTAL_TOKEN_LIMIT")))):
+            return MessageRes(result="[ALERT] Total token limit reached. Please contact admin.")
+        elif (get_token(msg.id) > int(str(os.getenv("TOTAL_TOKEN_LIMIT_PER_USER")))):
+            return MessageRes(result="[ALERT] User token limit reached. Please contact admin.")
+        else:
+            return await run(msg)
+    except Exception as e:
+        return "Please set TOTAL_TOKEN_LIMIT and TOTAL_TOKEN_LIMIT_PER_USER environment variables."
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

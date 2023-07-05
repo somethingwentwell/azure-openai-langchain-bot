@@ -22,27 +22,37 @@ docker buildx build --platform linux/amd64 --no-cache  -t langchain-base-image .
 3. Set up the environment variables in a `.env` file. You can copy the `.env.example` file and rename it to `.env`, then replace the placeholders with your own API key and bot token.
 
 ```
-MicrosoftAppType=MultiTenant
-MicrosoftAppId=
-MicrosoftAppPassword=
-MicrosoftAppTenantId=
+AGENT_TYPE=
 OPENAI_API_TYPE=azure
-OPENAI_API_VERSION=2022-12-01
+OPENAI_API_VERSION=2023-03-15-preview
 OPENAI_API_BASE=
 OPENAI_API_KEY=
-COMPLETION_DEPLOYMENT_NAME=text-davinci-003
-COMPLETION_MODEL_NAME=text-davinci-003
 EMBEDDING_DEPLOYMENT_NAME=text-embedding-ada-002
-CHAT_DEPLOYMENT_NAME=gpt-35-turbo
-CHAT_MODEL_NAME=gpt-35-turbo
-CHAT_SYSTEM_PROMPT=You are an GitLab AI assistant that helps people find information. You must use the given tools to answer questions. 
-TOOLS_CATEGORY=GitLab Docs
-ZAPIER_NLA_API_KEY=
+CHAT_DEPLOYMENT_NAME=gpt-35-turbo-16k
+CHAT_MODEL_NAME=gpt-35-turbo-16k
+CHAT_SYSTEM_PROMPT=You are an AI Shopping Helper that helps people to find mall information.
 POSTGRES_HOST=host.docker.internal
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
+MicrosoftAppType=MultiTenant
+MicrosoftAppId=
+MicrosoftAppPassword=
+MicrosoftAppTenantId=
 LC_API_URL=http://host.docker.internal/run
+ZAPIER_NLA_API_KEY=
+BING_SUBSCRIPTION_KEY=
+BING_SEARCH_URL=https://api.bing.microsoft.com/v7.0/search/
+AZURE_COGNITIVE_SEARCH_URL=
+AZURE_COGNITIVE_SEARCH_KEY=
+AZURE_COGNITIVE_SEARCH_INDEX_NAME=
+AZURE_COGNITIVE_SEARCH_DESC=
+AZURE_COGS_KEY=
+AZURE_COGS_ENDPOINT=
+AZURE_COGS_REGION=
+TOTAL_TOKEN_LIMIT=
+TOTAL_TOKEN_LIMIT_PER_USER=
+
 ```
 
 Make sure to keep the `.env` file private and do not commit it to version control.
