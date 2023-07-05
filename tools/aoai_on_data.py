@@ -142,7 +142,7 @@ def AAOAIDataSearch():
     ))
     return tools
 
-def aoaiondatatool():
+def aoai_on_data():
     tools = []
     tools.extend(AAOAIDataSearch())
     return tools

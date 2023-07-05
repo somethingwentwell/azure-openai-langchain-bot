@@ -7,7 +7,7 @@ load_dotenv(os.path.join(BASEDIR, '.env'), override=True)
 
 toolkit = AzureCognitiveServicesToolkit()
 
-def azurecognitiveservices():
+def azure_cognitive_services():
     tools = []
     tools.extend(toolkit.get_tools())
     return tools

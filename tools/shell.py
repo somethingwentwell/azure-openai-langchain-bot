@@ -20,7 +20,7 @@ def AShellTool():
     ))
     return tools
 
-def shelltool():
+def shell():
     tools = []
     tools.extend(AShellTool())
     return tools

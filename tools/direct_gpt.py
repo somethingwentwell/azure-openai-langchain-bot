@@ -28,7 +28,11 @@ def aoai(question):
             response = requests.post(url, headers=headers, data=payload)
             response_json = response.json()
             print(response_json)
-            return response_json["choices"][0]["message"]["content"]
+            obj = {
+                  "content": response_json["choices"][0]["message"]["content"],
+                  "total_tokens": response_json["usage"]["total_tokens"]
+            }
+            return obj
                     
         except Exception as e:
                 print(f"Error: {e}")
@@ -56,7 +60,11 @@ async def async_aoai(question):
             async with aiohttp.ClientSession() as session:
                     async with session.post(url, headers=headers, data=payload) as response:
                             response_json = await response.json()
-                            return response_json["choices"][0]["message"]["content"]
+                            obj = {
+                                "content": response_json["choices"][0]["message"]["content"],
+                                "total_tokens": response_json["usage"]["total_tokens"]
+                            }
+                            return obj
 
         except Exception as e:
                 print(f"Error: {e}")
@@ -83,7 +91,7 @@ def AAOAI():
     ))
     return tools
 
-def directgpt():
+def direct_gpt():
     tools = []
     tools.extend(AAOAI())
     return tools

@@ -12,7 +12,7 @@ def DuckDuckGoTool():
     ))
     return tools
 
-def duckduckgosearchtool():
+def duckduckgo_search():
     tools = []
     tools.extend(DuckDuckGoTool())
     return tools

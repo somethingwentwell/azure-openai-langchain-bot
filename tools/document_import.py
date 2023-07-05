@@ -1,7 +1,7 @@
 import os
 import fnmatch
 import aspose.words
-from langchain.document_loaders import PyPDFLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
+from langchain.document_loaders import PyPDFLoader, UnstructuredXMLLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader, UnstructuredPDFLoader, TextLoader, CSVLoader
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -185,12 +185,36 @@ def importedCsvTools(llm):
             ))
     return tools
 
-def docsimport(llm):
+def importedXmlTools(llm):
+    tools = []
+    for root, dirnames, filenames in os.walk('./docs-data/xmls'):
+        if (os.path.basename(root) != "xmls"):
+            data = []
+            for filename in fnmatch.filter(filenames, '*.xml'):
+                loader = UnstructuredXMLLoader(os.path.join(root, filename))
+                data += loader.load()
+            print("Embedding " + str(filenames))
+            doc_texts = text_splitter.split_documents(data)
+            doc_db = Chroma.from_documents(doc_texts, embeddings, collection_name="xmldocs")
+            # doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=doc_db)
+            doc = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_db.as_retriever(search_kwargs={"k": 1}))
+            tools.append(Tool(
+                name = os.path.basename(root),
+                func=doc.run,
+                coroutine=doc.arun,
+                description=f"useful for when you need to answer questions about {os.path.basename(root)}. Input should be a fully formed question.",
+                args_schema=DocsInput
+            ))
+    return tools
+
+
+def document_import(llm):
     tools = []
     convertWordToTxt()
     tools.extend(importedCsvTools(llm))
     tools.extend(importedPdfTools(llm))
     tools.extend(importedTxtTools(llm))
+    tools.extend(importedXmlTools(llm))
     tools.extend(importedHtmlTools(llm))
     tools.extend(importedMarkdownTools(llm))
     return tools
