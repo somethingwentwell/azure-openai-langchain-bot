@@ -346,7 +346,7 @@ async def all_token_used(range_type: str) -> JSONResponse:
         return JSONResponse(content={"error": "Invalid range type."})
 
     cur = conn.cursor()
-    cur.execute("SELECT SUM(used_token) FROM public.token_count WHERE timestamp >= '{start_timestamp}' AND timestamp <= '{end_timestamp}'")
+    cur.execute(f"SELECT SUM(used_token) FROM public.token_count WHERE timestamp >= '{start_timestamp}' AND timestamp <= '{end_timestamp}' ")
     rows = cur.fetchall()
     cur.close()
     
