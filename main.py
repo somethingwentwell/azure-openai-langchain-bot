@@ -228,7 +228,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     history[msg.id].add_user_message(msg.text)
                     history[msg.id].add_ai_message(response)
-                    log_token(msg.id, int(total_tokens), )
+                    log_token(msg.id, int(total_tokens), datetime.datetime.now())
 
                     await websocket.send_json({
                         "result": response
