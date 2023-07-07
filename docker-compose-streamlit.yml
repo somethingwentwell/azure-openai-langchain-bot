@@ -1,0 +1,186 @@
+version: "3.9"
+services:
+  # streamlit_azure_ocr:
+  #   image: warching/streamlit
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #         streamlit run azure_ocr.py --server.port=8501 --server.address=0.0.0.0
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "8501:8501"
+  #   volumes:
+  #     - ./streamlit:/app
+  
+  streamlit_doc_analyzer:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run doc_analyzer.py --server.port=8502 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8502:8502"
+    volumes:
+      - ./streamlit:/app
+
+  streamlit_job_ad:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run job_ad.py --server.port=8503 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8503:8503"
+    volumes:
+      - ./streamlit:/app
+
+  streamlit_complain_letter:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run complain_letter.py --server.port=8504 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8504:8504"
+    volumes:
+      - ./streamlit:/app             
+
+  streamlit_shopping_mall:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run shopping_mall.py --server.port=8505 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8505:8505"
+    volumes:
+      - ./streamlit/shopping_mall:/app 
+
+  streamlit_excel_analyzer:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run excel_analyzer.py --server.port=8506 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8506:8506"
+    volumes:
+      - ./streamlit:/app       
+
+  streamlit_aoai_usage_dashboard:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run aoai_usage_dashboard.py --server.port=8507 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8507:8507"
+    volumes:
+      - ./streamlit:/app
+
+  streamlit_image_gen:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run image_gen.py --server.port=8508 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8508:8508"
+    volumes:
+      - ./streamlit:/app       
+
+  streamlit_ppt_gen:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run ppt_gen.py --server.port=8509 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8509:8509"
+    volumes:
+      - ./streamlit/ppt_gen_demo:/app              
+
+  streamlit_testing_app:
+      image: warching/streamlit
+      command:
+        - /bin/bash
+        - -c
+        - |
+            streamlit run test.py --server.port=8510 --server.address=0.0.0.0
+      env_file:
+        - .env
+      ports:
+        - "8510:8510"
+      volumes:
+        - ./streamlit:/app   
+
+  streamlit_shopping_mall2:
+      image: warching/streamlit
+      command:
+        - /bin/bash
+        - -c
+        - |
+            streamlit run shopping_mall2.py --server.port=8511 --server.address=0.0.0.0
+      env_file:
+        - .env
+      ports:
+        - "8511:8511"
+      volumes:
+        - ./streamlit:/app   
+
+  streamlit_ppt_gen_360:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run ppt_gen_360.py --server.port=8512 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8512:8512"
+    volumes:
+      - ./streamlit/ppt_gen_demo:/app 
+
+  streamlit_doc_analuzer_brian:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run doc_analyzer_brian.py --server.port=8513 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8513:8513"
+    volumes:
+      - ./streamlit:/app               
+
+networks:
+  langchain-network:

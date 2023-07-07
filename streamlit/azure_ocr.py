@@ -1,59 +1,117 @@
-# create a streamlit app with the following requirement:  
-# 1. upload image or pdf then ocr the uploaded file using Azure cognitive service with python requests using environment variable AZURE_COGNITIVE_SERVICES_KEY and AZURE_COGNITIVE_SERVICES_EP  
-# 2. After getting the OCR response, request http://localhost:8000/run with the following JSON {  
-#   "id": "ws",  
-#   "text": "Extract Date, From address, From phone number, To address, To phone number, order items, total from the OCR scanned text: <THE OCR RESULT>"  
-# }  
-# 3. Show the extracted text from the API response 
+import streamlit as st
+import requests
+import json
+import os
+import time
 
-import streamlit as st  
-import requests  
-  
-# Set subscription key and endpoint for Azure Cognitive Services API  
-subscription_key = ""  
-endpoint = "https://teccognitiveservices.cognitiveservices.azure.com/"  
-  
+st.set_page_config(page_title="Data Classification", page_icon=":page_facing_up:")
+
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
+# Set subscription key and endpoint for Azure Cognitive Services API using environment variables  
+subscription_key = os.environ['AZURE_COGNITIVE_SERVICES_KEY']  
+endpoint = os.environ['AZURE_COGNITIVE_SERVICES_EP']  
+
 # Set API endpoint for OCR service  
-ocr_url = endpoint + "vision/v3.0/ocr"  
-  
-# Define function to upload image and perform OCR using Azure Cognitive Services API  
-def ocr(image_file):  
-    headers = {'Ocp-Apim-Subscription-Key': subscription_key, 'Content-Type': 'application/octet-stream'}  
-    response = requests.post(ocr_url, headers=headers, data=image_file)  
-    response.raise_for_status()  
-    analysis = response.json()  
-    return analysis  
+ocr_url = endpoint + "vision/v3.2/read/analyze"  
 
-def send_to_api(ocr_result):  
-    url = "http://localhost:8000/run"  
-  
+
+# Define function to perform OCR on uploaded file
+def ocr_file(file):
+    # Set up request headers and parameters
+    headers = {
+        "Content-Type": "application/octet-stream",
+        "Ocp-Apim-Subscription-Key": subscription_key
+    }
+    params = {
+        "language": "en",
+        "detectOrientation": "true"
+    }
+    # Send request to Azure Cognitive Services API
+    response = requests.post(ocr_url, headers=headers, params=params, data=file)
+
+    # Wait Respond from Azure Cognitive Services API
+    operation_url = response.headers["Operation-Location"]  
+    response = requests.get(operation_url, headers=headers)  
+    while response.json()["status"] != 'succeeded':  
+        time.sleep(1)  
+        response = requests.get(operation_url, headers=headers)
+    #st.write(response.text)  	
+
+    # Parse response JSON and extract OCR results
+    response_json = json.loads(response.text)
+    ocr_results = ""
+    for region in response_json["analyzeResult"]["readResults"][0]["lines"]:
+        for word in region["words"]:
+            ocr_results += word["text"] + " "
+        ocr_results += "\n"
+    return ocr_results
+
+response_text = """
+You are a JSON formatter tool that help on outputting JSON format form the input directly. 
+Extract the following input into JSON format. 
+<Rules>
+Rule1: Do not use markdown in the output. 
+Rule2: The final answer must be in JSON string like: 
+{'DocSet No': <Doc + 001>, 'DocSet Date': <DD-MMM-YYYY>, 'Doc#': <Doc>, 'Doc Path': <Files\12106\2017\'Doc'\'File'.pdf>, 'File Size': <Size>, 'Is Drawing': <Is Drawing, No>, 'From (Company)': <Classified the document sent from which Company>, 'From Name': <Classified the document sent from which Person>, 'To (Company)': <Classified the document sent to which Company>, 'To (Name)': <Classified the document sent to which Person>, 'Document Type': <Letter, Memo, Site Memo, Transmittal, Payment, Quotation>, 'Project Contract Code': <12106>, 'Package': <Classified the Subject or Project Title>, 'Received/ Issued Date': <DD-MMM-YYYY>, 'Secure Document': <Yes, No>, 'Status': <Active>, 'DCS Subject': <Classified the Subject or Project Title>}
+<Rules> 
+
+JSON response as below: 
+"""
+
+def insource(ocr_results):
+    url = "http://insource-test-015.southeastasia.cloudapp.azure.com:8000/run"  
     payload = {  
-        "id": "ws",  
-        "text": f'Extract Date, From address, From phone number, To address, To phone number, order items, total as markdown list from the OCR scanned text: "{ocr_result}"',  
+      "id": '8501_nwc',  
+      "text": response_text + "\n" + ocr_results
     }  
-  
-    response = requests.post(url, json=payload)  
-    response.raise_for_status()  
-  
-    return response.json()  
-  
-# Set up the Streamlit app  
-st.title("OCR with Azure Cognitive Services")  
-  
-# Allow user to upload an image file  
-image_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])  
-  
-# Perform OCR and display the results  
-if image_file is not None:  
-    image_bytes = image_file.read()  
-    result = ocr(image_bytes)  
-    text = ""  
-    for region in result['regions']:  
-        for line in region['lines']:  
-            for word in line['words']:  
-                text += word['text'] + " "  
-    st.header("OCR Result")  
-    st.write(text)  
-    api_response = send_to_api(text) 
-    st.header("Extracted Text:")  
-    st.write(api_response['result'])  
+    response = requests.post(url, json=payload)
+    return response.json()
+
+#def rephase_insource(response):
+#    response1 = response.json()
+#    response1 = json.dumps(response1)
+#    start = response1.find('{', response1.find('{') + 1)
+#    end = response1.rfind('}') - 1
+#    new_response = response1[start:end]
+#    new_response = new_response.replace("'", "\"")
+#    return new_response
+
+# Define Streamlit app
+def app():
+    st.title("Data Classification and Auto-filling")
+    st.write("Upload a PDF or image file to perform data classification.")
+    # Allow user to upload file
+    file = st.file_uploader("Upload file", type=["pdf", "png", "jpg", "jpeg"])
+    if file is not None:
+        # Perform OCR on uploaded file
+        ocr_results = ocr_file(file.read())
+        # Display OCR results
+        st.write("OCR Results:", ":heavy_check_mark:")
+        # st.write(ocr_results)
+       
+        # Call InSource to get anylyst the OCR results
+        insource_response = insource(ocr_results)['result']   
+        st.write("InSource Response:", ":heavy_check_mark:")
+        # st.write(insource_response)
+
+        # Parse JSONL response into dictionary
+        # new_response = rephase_insource(response)
+        # st.write(parsed_obj)
+        insource_response = insource_response.replace("'", "\"")
+        result = json.loads(insource_response)
+        for label, data in result.items():
+            if isinstance(data, str):
+                form = st.text_input(label, data)
+            else:
+                form = st.text_input(label, json.dumps(data))
+        
+# Run Streamlit app
+if __name__ == "__main__":
+    app()
