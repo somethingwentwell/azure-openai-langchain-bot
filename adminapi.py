@@ -322,10 +322,31 @@ async def check_tools(server: ChatServer):
     except:
         return {"status": "Not Ready"}
 
-@app.get("/all_token_used")
-async def all_token_used() -> JSONResponse:
+@app.get("/all_token_used/{range_type}")
+async def all_token_used(range_type: str) -> JSONResponse:
+
+    # Get the current month and year
+    now = datetime.datetime.now()
+    year = now.year
+    month = now.month
+
+    if range_type == "year":
+        # Construct the timestamp range for the current year
+        start_timestamp = f"{year}-01-01 00:00:00"
+        end_timestamp = f"{year}-12-31 23:59:59"
+    elif range_type == "month":
+        # Construct the timestamp range for the current month
+        start_timestamp = f"{year}-{month:02}-01 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    elif range_type == "day":
+        # Construct the timestamp range for the current day
+        start_timestamp = f"{year}-{month:02}-{now.day:02} 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    else:
+        return JSONResponse(content={"error": "Invalid range type."})
+
     cur = conn.cursor()
-    cur.execute("SELECT SUM(used_token) FROM public.token_count")
+    cur.execute("SELECT SUM(used_token) FROM public.token_count WHERE timestamp >= '{start_timestamp}' AND timestamp <= '{end_timestamp}'")
     rows = cur.fetchall()
     cur.close()
     
