@@ -6,12 +6,15 @@ from fastapi.responses import JSONResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-from dotenv import dotenv_values, set_key
+from dotenv import load_dotenv, dotenv_values, set_key
 import psycopg2
 import os
 import subprocess
 import requests
 import uuid
+import datetime
+
+load_dotenv(".env", override=True)
 
 app = FastAPI()
 # Add middleware to add Access-Control-Allow-Origin header to all responses
@@ -332,10 +335,31 @@ async def all_token_used() -> JSONResponse:
 
     return JSONResponse(content=res)
 
-@app.get("/token_count")
-async def total_token_count() -> JSONResponse:
+@app.get("/token_count/{range_type}")
+async def total_token_count(range_type:str) -> JSONResponse:
+
+    # Get the current month and year
+    now = datetime.datetime.now()
+    year = now.year
+    month = now.month
+
+    if range_type == "year":
+        # Construct the timestamp range for the current year
+        start_timestamp = f"{year}-01-01 00:00:00"
+        end_timestamp = f"{year}-12-31 23:59:59"
+    elif range_type == "month":
+        # Construct the timestamp range for the current month
+        start_timestamp = f"{year}-{month:02}-01 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    elif range_type == "day":
+        # Construct the timestamp range for the current day
+        start_timestamp = f"{year}-{month:02}-{now.day:02} 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    else:
+        return JSONResponse(content={"error": "Invalid range type."})
+
     cur = conn.cursor()
-    cur.execute(f"SELECT session_id, used_token FROM public.token_count")
+    cur.execute(f"SELECT session_id, SUM(used_token) FROM public.token_count WHERE timestamp >= '{start_timestamp}' AND timestamp <= '{end_timestamp}' GROUP BY session_id")
     rows = cur.fetchall()
     cur.close()
 
@@ -348,10 +372,31 @@ async def total_token_count() -> JSONResponse:
     
     return JSONResponse(content=json_rows)
 
-@app.get("/token_count/{session_id}")
-async def token_count(session_id: str) -> JSONResponse:
+@app.get("/token_count/{range_type}/{session_id}")
+async def token_count(range_type:str, session_id: str) -> JSONResponse:
+
+    # Get the current month and year
+    now = datetime.datetime.now()
+    year = now.year
+    month = now.month
+
+    if range_type == "year":
+        # Construct the timestamp range for the current year
+        start_timestamp = f"{year}-01-01 00:00:00"
+        end_timestamp = f"{year}-12-31 23:59:59"
+    elif range_type == "month":
+        # Construct the timestamp range for the current month
+        start_timestamp = f"{year}-{month:02}-01 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    elif range_type == "day":
+        # Construct the timestamp range for the current day
+        start_timestamp = f"{year}-{month:02}-{now.day:02} 00:00:00"
+        end_timestamp = f"{year}-{month:02}-{now.day:02} 23:59:59"
+    else:
+        return JSONResponse(content={"error": "Invalid range type."})
+    
     cur = conn.cursor()
-    cur.execute(f"SELECT session_id, used_token FROM public.token_count WHERE session_id='{session_id}'")
+    cur.execute(f"SELECT session_id, SUM(used_token) FROM public.token_count WHERE session_id='{session_id}' AND timestamp >= '{start_timestamp}' AND timestamp <= '{end_timestamp}'")
     rows = cur.fetchall()
     cur.close()
     
@@ -361,20 +406,20 @@ async def token_count(session_id: str) -> JSONResponse:
     
     return JSONResponse(content=res)
 
-@app.put("/reset_token/{session_id}")
-async def reset_token(session_id: str) -> JSONResponse:
-    cur = conn.cursor()
-    cur.execute(f"UPDATE public.token_count SET used_token = 0 WHERE session_id='{session_id}'")
-    conn.commit()
-    cur.close()
+# @app.put("/reset_token/{session_id}")
+# async def reset_token(session_id: str) -> JSONResponse:
+#     cur = conn.cursor()
+#     cur.execute(f"UPDATE public.token_count SET used_token = 0 WHERE session_id='{session_id}'")
+#     conn.commit()
+#     cur.close()
     
-    return JSONResponse(content={"status": "success"})
+#     return JSONResponse(content={"status": "success"})
 
-@app.put("/reset_token")
-async def reset_all_token() -> JSONResponse:
-    cur = conn.cursor()
-    cur.execute(f"UPDATE public.token_count SET used_token = 0")
-    conn.commit()
-    cur.close()
+# @app.put("/reset_token")
+# async def reset_all_token() -> JSONResponse:
+#     cur = conn.cursor()
+#     cur.execute(f"UPDATE public.token_count SET used_token = 0")
+#     conn.commit()
+#     cur.close()
     
-    return JSONResponse(content={"status": "success"})
+#     return JSONResponse(content={"status": "success"})

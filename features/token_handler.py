@@ -10,7 +10,7 @@ postgresHost = str(os.getenv("POSTGRES_HOST"))
 postgresPort = str(os.getenv("POSTGRES_PORT"))
 
 
-def log_token(session_id: str, used_token: int) -> None:
+def log_token(session_id: str, used_token: int, timestamp) -> None:
     conn = psycopg2.connect(
         host=postgresHost,
         port=postgresPort,
@@ -20,8 +20,8 @@ def log_token(session_id: str, used_token: int) -> None:
     )
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO token_count (session_id, used_token) VALUES (%s, %s) ON CONFLICT (session_id) DO UPDATE SET used_token = token_count.used_token + %s",
-        (session_id, used_token, used_token)
+        "INSERT INTO token_count (session_id, used_token, timestamp) VALUES (%s, %s, %s)",
+        (session_id, used_token, timestamp)
     )
     conn.commit()
     cur.close()
@@ -37,14 +37,19 @@ def get_token(session_id: str) -> int:
     )
     cur = conn.cursor()
     cur.execute(
-        "SELECT used_token::int FROM token_count WHERE session_id = %s",
+        "SELECT SUM(used_token)::int FROM token_count WHERE session_id = %s",
         (session_id,)
     )
     result = cur.fetchall()
     cur.close()
     conn.close()
 
-    return int(str(result[0][0])) if result else 0
+    print(result)
+
+    if result and result[0][0]:
+        return int(result[0][0])
+    else:
+        return 0
 
 def get_total_tokens() -> int:
     conn = psycopg2.connect(
@@ -62,4 +67,9 @@ def get_total_tokens() -> int:
     cur.close()
     conn.close()
 
-    return int(str(result[0][0])) if result else 0
+    print(result)
+
+    if result and result[0][0]:
+        return int(result[0][0])
+    else:
+        return 0

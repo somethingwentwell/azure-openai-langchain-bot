@@ -11,6 +11,8 @@ CREATE TABLE agent_log (
 );
 
 CREATE TABLE token_count (
-  session_id VARCHAR(255)PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255),
+  timestamp TIMESTAMP NOT NULL,
   used_token NUMERIC NOT NULL
 );

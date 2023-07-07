@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import asyncio 
 import os
 import logging
+import datetime
 from tools.direct_gpt import aoai, async_aoai
 from agents.simple_memory_agent import SimpleMemoryAgent
 from features.token_handler import log_token, get_token, get_total_tokens
@@ -170,7 +171,7 @@ async def run(msg: MessageReq):
                 print("Conversation History: ")
                 print(agent_chains[msg.id].memory.buffer)
                 print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
-        log_token(msg.id, int(total_tokens))
+        log_token(msg.id, int(total_tokens), datetime.datetime.now())
     except Exception as e:
         response = str(e)
     history[msg.id].add_user_message(msg.text)
@@ -188,7 +189,9 @@ async def limit_run(msg: MessageReq):
         else:
             return await run(msg)
     except Exception as e:
-        return "Please set TOTAL_TOKEN_LIMIT and TOTAL_TOKEN_LIMIT_PER_USER environment variables."
+        print(e)
+        return e
+        # return "Please set TOTAL_TOKEN_LIMIT and TOTAL_TOKEN_LIMIT_PER_USER environment variables."
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -225,7 +228,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     history[msg.id].add_user_message(msg.text)
                     history[msg.id].add_ai_message(response)
-                    log_token(msg.id, int(total_tokens))
+                    log_token(msg.id, int(total_tokens), )
 
                     await websocket.send_json({
                         "result": response
