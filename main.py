@@ -23,7 +23,7 @@ from features.token_handler import log_token, get_token, get_total_tokens
 #from tools.azure_cognitive_services import azure_cognitive_services
 
 # IMPORT TOOL START
-#from tools.bing_search import bing_search
+from tools.bing_search import bing_search
 #from tools.shell import shell
 #from tools.document_import import document_import
 #from tools.chatgpt_plugins import chatgpt_plugins
@@ -58,7 +58,7 @@ azchat=AzureChatOpenAI(
 #tools.extend(azure_cognitive_services())
 
 # ADD TOOL START 
-#tools.extend(bing_search())
+tools.extend(bing_search())
 #tools.extend(shell())
 #tools.extend(document_import(azchat))
 #tools.extend(chatgpt_plugins())
@@ -256,4 +256,4 @@ def get_tools():
 
 
 
-# RESTART: bac7efe1-4251-4598-8fc5-cc7da30ec0c5
+# RESTART: bc23c05b-ecac-4763-acc1-72ca0381b93a

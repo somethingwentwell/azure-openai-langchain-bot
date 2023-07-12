@@ -72,6 +72,29 @@ services:
     deploy:
       replicas: 1
 
+  st-admin-ui:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run 0_📚_InSource_Home.py --server.fileWatcherType none --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - INSOURCE_CHAT_HOST=host.docker.internal:8000
+      - INSOURCE_ADMIN_HOST=host.docker.internal:8100
+    ports:
+      - "8200:8501"
+    volumes:
+      - ./admin-ui:/app
+    networks:
+      - langchain-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   # streamlit:
   #   image: warching/streamlit
   #   command:
@@ -112,6 +135,8 @@ services:
   #       - "5432:5432"
   #   extra_hosts:
   #     - "host.docker.internal:host-gateway"
+  #   networks:
+  #     langchain-network:
 
 networks:
   langchain-network:

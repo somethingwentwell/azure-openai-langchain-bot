@@ -1,0 +1,8 @@
+streamlit
+asyncio
+websockets
+pandas
+psycopg2-binary
+wordcloud
+matplotlib
+plotly
