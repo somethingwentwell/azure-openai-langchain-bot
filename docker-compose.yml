@@ -78,14 +78,12 @@ services:
       - /bin/bash
       - -c
       - |
-          streamlit run 0_📚_InSource_Home.py --server.fileWatcherType none --server.port=8501 --server.address=0.0.0.0
+          streamlit run 0_📚_InSource_Home.py --server.fileWatcherType poll --server.port=8501 --server.address=0.0.0.0
     environment:
-      - POSTGRES_HOST=host.docker.internal
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
       - INSOURCE_CHAT_HOST=host.docker.internal:8000
       - INSOURCE_ADMIN_HOST=host.docker.internal:8100
+    env_file:
+      - .env
     ports:
       - "8200:8501"
     volumes:
