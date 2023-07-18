@@ -3,6 +3,9 @@ import requests
 import pandas as pd
 import os
 import json
+from pages.utils.style import add_style 
+
+add_style()
 
 def aoai(question):
         try:
@@ -30,19 +33,6 @@ def aoai(question):
                 print(f"Error: {e}")
                 return f"Error: {e}"
 
-st.set_page_config(
-    page_title="InSource",
-    page_icon="📚",
-    layout="wide"
-)
-
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
 st.title("AI Web App Generator")  
 
@@ -56,19 +46,8 @@ output = st.text_area("Enter your App expected output here")
 
 prompt = '''
 Draft a simple Streamlit app code which added the following code:
-st.set_page_config(
-    page_title="InSource",
-    page_icon="📚",
-    layout="wide"
-)
-
-hide_streamlit_style = """
-            <style>
-            #MainMenu {{visibility: hidden;}}
-            footer {{visibility: hidden;}}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+from pages.utils.style import add_style 
+add_style()
 
 The Streamlit app also need to fullfill the the following objective, input and desire output:
 

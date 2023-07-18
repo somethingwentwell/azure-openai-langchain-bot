@@ -2,20 +2,9 @@ import streamlit as st
 import psycopg2  
 import pandas as pd  
 import os
+from pages.utils.style import add_style 
 
-st.set_page_config(
-    page_title="InSource",
-    page_icon="📚",
-    layout="wide"
-)
-
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+add_style()
   
 # Database connection  
 def connect_to_db():  

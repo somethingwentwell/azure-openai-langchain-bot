@@ -6,3 +6,4 @@ psycopg2-binary
 wordcloud
 matplotlib
 plotly
+openapi-spec-validator  

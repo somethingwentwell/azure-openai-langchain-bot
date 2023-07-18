@@ -25,23 +25,10 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import plotly.express as px  
 import os
+from pages.utils.style import add_style 
 
-st.set_page_config(
-    page_title="InSource",
-    page_icon="📚",
-    layout="wide"
-)
+add_style()
 
-st.title('InSource Dashboard') 
-
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
-  
 # Database connection  
 def connect_to_db():  
     return psycopg2.connect(
@@ -103,6 +90,7 @@ def top_10_token_usage_id_per_month():
     """  
     return fetch_data(query)  
 
+st.title('InSource Dashboard') 
 df = fetch_message_store()  
 st.subheader('Word Cloud of Messages')  
 messages = extract_messages(df)  

@@ -99,17 +99,17 @@ async def readall():
 class DCActionReq(BaseModel):
     action: str
 
-@app.post("/service-ops")
-async def docker_ps(req: DCActionReq):
-    print(req)
-    if req.action not in ["up", "down", "restart", "logs"]:
-        return {"error": "Invalid action. Only 'up', 'down', and 'restart' are allowed."}
-    try:
-        result = subprocess.run(['docker-compose', req.action], stdout=subprocess.PIPE)
-        print(result)
-    except Exception as e:
-        return {"error": str(e)}
-    return {"result": result}
+# @app.post("/service-ops")
+# async def docker_ps(req: DCActionReq):
+#     print(req)
+#     if req.action not in ["up", "down", "restart", "logs"]:
+#         return {"error": "Invalid action. Only 'up', 'down', and 'restart' are allowed."}
+#     try:
+#         result = subprocess.run(['docker-compose', req.action], stdout=subprocess.PIPE)
+#         print(result)
+#     except Exception as e:
+#         return {"error": str(e)}
+#     return {"result": result}
 
 class ToolReq(BaseModel):
     name: str

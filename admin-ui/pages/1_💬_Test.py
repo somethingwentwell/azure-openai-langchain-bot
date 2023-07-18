@@ -4,20 +4,9 @@ from websockets import client
 import json
 import os
 import requests
+from pages.utils.style import add_style 
 
-st.set_page_config(
-    page_title="InSource",
-    page_icon="📚",
-    layout="wide"
-)
-
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+add_style()
 
 def send_receive_messages_api(rest_uri_uri, message, aiMsg):
     try:
