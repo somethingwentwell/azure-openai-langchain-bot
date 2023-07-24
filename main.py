@@ -8,11 +8,13 @@ from langchain.callbacks import tracing_enabled
 from langchain.callbacks import get_openai_callback
 from features.callback import CustomHandler, WSHandler
 from dotenv import load_dotenv
+from typing import Optional
 import asyncio 
 import os
 import logging
 import datetime
 from tools.direct_gpt import aoai, async_aoai
+from tools.azure_openai_functions import json_output
 from agents.simple_memory_agent import SimpleMemoryAgent
 from features.token_handler import log_token, get_token, get_total_tokens
 
@@ -23,10 +25,11 @@ from features.token_handler import log_token, get_token, get_total_tokens
 #from tools.azure_cognitive_services import azure_cognitive_services
 
 # IMPORT TOOL START
-from tools.bing_search import bing_search
+#from tools.bing_search import bing_search
 #from tools.shell import shell
 #from tools.document_import import document_import
 #from tools.chatgpt_plugins import chatgpt_plugins
+#from tools.azure_openai_functions import azure_openai_functions
 #from tools.aoai_on_data import aoai_on_data
 #from tools.zapier import zapier
 #from tools.image_analysis import image_analysis
@@ -58,11 +61,12 @@ azchat=AzureChatOpenAI(
 #tools.extend(azure_cognitive_services())
 
 # ADD TOOL START 
-tools.extend(bing_search())
+#tools.extend(bing_search())
 #tools.extend(shell())
 #tools.extend(document_import(azchat))
 #tools.extend(chatgpt_plugins())
 #tools.extend(aoai_on_data())
+#tools.extend(azure_openai_functions())
 #tools.extend(zapier())
 #tools.extend(image_analysis())
 #tools.extend(custom_tools()) 
@@ -79,11 +83,12 @@ agent_type = {
     "OPENAI_MULTI_FUNCTIONS": AgentType.OPENAI_MULTI_FUNCTIONS,
     "DIRECT_GPT": "direct_gpt",
     "CUSTOM_AGENT": "custom_agent",
+    "AOAI_FUNCTIONS": "aoai_functions",
 }.get(agent_type_str, None)
 if agent_type is None:
     raise ValueError(f"Invalid agent type: {agent_type_str}")
 
-def SetupChatAgent(id, callbacks):
+def SetupChatAgent(id, agent_type, callbacks):
     postgresUser = str(os.getenv("POSTGRES_USER"))
     postgresPassword = str(os.getenv("POSTGRES_PASSWORD"))
     postgresHost = str(os.getenv("POSTGRES_HOST"))
@@ -91,7 +96,7 @@ def SetupChatAgent(id, callbacks):
     history[id] = PostgresChatMessageHistory(
         connection_string=f"postgresql://{postgresUser}:{postgresPassword}@{postgresHost}:{postgresPort}/chat_history", 
         session_id=str(id))
-    if (str(os.getenv("AGENT_TYPE")) == "CUSTOM_AGENT"):
+    if (agent_type == "CUSTOM_AGENT"):
         memories[id] = ConversationSummaryBufferMemory(
             llm=azchat, 
             max_token_limit=2500, 
@@ -107,9 +112,12 @@ def SetupChatAgent(id, callbacks):
             callbacks=callbacks,
             verbose=True, 
             handle_parsing_errors=True)
-    elif (str(os.getenv("AGENT_TYPE")) == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
-        str(os.getenv("AGENT_TYPE")) == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
-        str(os.getenv("AGENT_TYPE")) == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
+    if (agent_type == "OPENAI_FUNCTIONS" or agent_type == "OPENAI_MULTI_FUNCTIONS"):
+        print("OPENAI_FUNCTIONS_SETUP")
+        agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
+    elif (agent_type == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
+        agent_type == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
+        agent_type == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
         memories[id] = ConversationSummaryBufferMemory(
             llm=azchat, 
             max_token_limit=2500, 
@@ -128,6 +136,7 @@ def SetupChatAgent(id, callbacks):
 
 class MessageReq(BaseModel):
     id: str
+    agent_type: Optional[str] = str(os.getenv("AGENT_TYPE"))
     text: str
 
 class MessageRes(BaseModel):
@@ -151,15 +160,21 @@ def clearMemory(mid):
 @app.post("/run")
 async def run(msg: MessageReq):
     if (msg.id not in agent_chains):
-        SetupChatAgent(msg.id, [CustomHandler(session_id=msg.id, user_q=msg.text)])
+        SetupChatAgent(msg.id, msg.agent_type, [CustomHandler(session_id=msg.id, user_q=msg.text)])
     try:
         total_tokens = 0
         with get_openai_callback() as cb:
-            if (str(os.getenv("AGENT_TYPE")) == "DIRECT_GPT"):
+            if (msg.agent_type == "DIRECT_GPT"):
                 response_json = aoai(msg.text)
                 response = response_json["content"]
                 total_tokens = response_json["total_tokens"]
-            elif (str(os.getenv("AGENT_TYPE")) == "CUSTOM_AGENT"):
+            elif (msg.agent_type == "AOAI_FUNCTIONS"):
+                response_json = json_output(msg.text)
+                print(response_json)
+                response = response_json["content"]
+                total_tokens = response_json["total_tokens"]
+            elif (msg.agent_type == "CUSTOM_AGENT" or msg.agent_type == "OPENAI_FUNCTIONS" or msg.agent_type == "OPENAI_MULTI_FUNCTIONS"):
+                print(msg.agent_type)
                 response = agent_chains[msg.id].run(input=msg.text)
                 total_tokens = cb.total_tokens
             else:
@@ -204,16 +219,20 @@ async def websocket_endpoint(websocket: WebSocket):
                     msg = MessageReq(**msg)
 
                     if (msg.id not in agent_chains):
-                        SetupChatAgent(msg.id, [WSHandler(websocket=websocket, session_id=msg.id, user_q=msg.text)])
+                        SetupChatAgent(msg.id, msg.agent_type, [WSHandler(websocket=websocket, session_id=msg.id, user_q=msg.text)])
                         await websocket.send_json({
                             "result": "Enabled Tools: " + str(tool_names)
                         }) 
 
-                    if (str(os.getenv("AGENT_TYPE")) == "DIRECT_GPT"):
+                    if (msg.agent_type == "DIRECT_GPT"):
                         response_json = await asyncio.create_task(async_aoai(msg.text))
                         response = response_json["content"]
                         total_tokens = response_json["total_tokens"]
-                    elif (str(os.getenv("AGENT_TYPE")) == "CUSTOM_AGENT"):
+                    elif (msg.agent_type == "AOAI_FUNCTIONS"):
+                        response_json = json_output(msg.text)
+                        response = response_json["content"]
+                        total_tokens = response_json["total_tokens"]
+                    elif (msg.agent_type == "CUSTOM_AGENT"):
                         response = await asyncio.create_task(agent_chains[msg.id].arun(input=msg.text))
                         total_tokens = cb.total_tokens
                     else:
