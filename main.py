@@ -113,7 +113,6 @@ def SetupChatAgent(id, agent_type, callbacks):
             verbose=True, 
             handle_parsing_errors=True)
     if (agent_type == "OPENAI_FUNCTIONS" or agent_type == "OPENAI_MULTI_FUNCTIONS"):
-        print("OPENAI_FUNCTIONS_SETUP")
         agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
     elif (agent_type == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
         agent_type == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
@@ -170,11 +169,9 @@ async def run(msg: MessageReq):
                 total_tokens = response_json["total_tokens"]
             elif (msg.agent_type == "AOAI_FUNCTIONS"):
                 response_json = json_output(msg.text)
-                print(response_json)
                 response = response_json["content"]
                 total_tokens = response_json["total_tokens"]
             elif (msg.agent_type == "CUSTOM_AGENT" or msg.agent_type == "OPENAI_FUNCTIONS" or msg.agent_type == "OPENAI_MULTI_FUNCTIONS"):
-                print(msg.agent_type)
                 response = agent_chains[msg.id].run(input=msg.text)
                 total_tokens = cb.total_tokens
             else:

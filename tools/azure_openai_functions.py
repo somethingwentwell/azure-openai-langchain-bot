@@ -1,3 +1,4 @@
+import json
 from langchain.agents import Tool
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -14,29 +15,21 @@ openai.api_base = os.getenv("OPENAI_API_BASE")
 class DocsInput(BaseModel):
     question: str = Field()
 
-functions= [
-    {
-      "name": "get_current_weather",
-      "description": "Get the current weather in a given location",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string",
-            "description": "The city and state, e.g. San Francisco, CA"
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["celsius", "fahrenheit"]
-          }
-        },
-        "required": ["location"]
-      }
-    }
-]
+function_loaded = False
 
+try:
+    with open("./tools/openai_functions.json", "r") as f:
+        functions = json.load(f)
+        function_loaded = True
+except Exception as e:
+    print(f"Error: {e}")
+    function_loaded = False
 
 def json_output(message):
+    if not function_loaded:
+        return {"content": "Error: Functions not loaded. Please contact the administrator.",
+                "total_tokens": 0}
+    
     messages = [{
         "role": "user",
         "content": message
@@ -47,12 +40,14 @@ def json_output(message):
         functions=functions,
         function_call="auto", 
     )
-    print(response)
+    obj = response
 
-    obj = {
-        "content": response["choices"][0]["message"]["function_call"]["arguments"],
-        "total_tokens": response["usage"]["total_tokens"]
-    }
+    if (response["choices"]):
+        obj = {
+            "content": response["choices"][0]["message"]["function_call"]["arguments"],
+            "total_tokens": response["usage"]["total_tokens"]
+        }
+    print(obj)
 
     return obj
 

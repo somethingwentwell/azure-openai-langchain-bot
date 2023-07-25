@@ -40,6 +40,11 @@ async def main():
     session_id = st.text_input("Session ID:")
     user_input = st.chat_input("Type your message:")  
 
+    add_selectbox = st.selectbox(
+        "Select Agent Type",
+        ("DIRECT_GPT", "AOAI_FUNCTIONS", "CHAT_CONVERSATIONAL_REACT_DESCRIPTION", "CHAT_ZERO_SHOT_REACT_DESCRIPTION", "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION", "CUSTOM_AGENT")
+    )
+
     with st.sidebar:
         add_radio = st.radio(
             "Select Type",
@@ -55,6 +60,7 @@ async def main():
             userMsg.write(user_input)  
             req = {
                 "id": "rest-st-" + session_id,
+                "agent_type": add_selectbox,
                 "text": user_input
             }
             send_receive_messages_api(rest_uri, req, aiMsg) 
