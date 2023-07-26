@@ -114,7 +114,7 @@ def SetupChatAgent(id, agent_type, callbacks):
             handle_parsing_errors=True)
     if (agent_type == "OPENAI_FUNCTIONS" or agent_type == "OPENAI_MULTI_FUNCTIONS"):
         agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
-    elif (agent_type == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
+    if (agent_type == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
         agent_type == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
         agent_type == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
         memories[id] = ConversationSummaryBufferMemory(
@@ -272,4 +272,4 @@ def get_tools():
 
 
 
-# RESTART: bc23c05b-ecac-4763-acc1-72ca0381b93a
+# RESTART: fe57a4dc-6f4a-479e-916d-ff7a74b137cb

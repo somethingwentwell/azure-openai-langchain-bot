@@ -7,3 +7,4 @@ wordcloud
 matplotlib
 plotly
 openapi-spec-validator  
+pymupdf
