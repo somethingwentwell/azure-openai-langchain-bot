@@ -1,4 +1,5 @@
 import streamlit as st
+<<<<<<< HEAD
 #import pandas as pd
 import requests
 import json
@@ -55,3 +56,34 @@ total_token = data["all_token_used"]
 st.metric(label="Total Token", value=total_token)
 #display_card("Total API Request", total_api_request)
 #display_card("Total Token Today", total_token_today)
+=======
+import pandas as pd
+import plotly.express as px
+
+# Load data
+data = pd.read_csv("token_usage.csv")
+
+# Calculate total token and api requests
+total_token = data["Token"].sum()
+total_requests = data["Requests"].sum()
+
+# Filter data by date
+today = pd.Timestamp.today().strftime("%Y-%m-%d")
+today_data = data[data["Date"] == today]
+today_token = today_data["Token"].sum()
+
+# Line graph of token usage by year, month, week, day
+fig = px.line(data, x="Date", y="Token", title="Token Usage Over Time")
+fig.update_xaxes(title="Date")
+fig.update_yaxes(title="Token Usage")
+
+# Pie chart of total token usage
+fig2 = px.pie(data, values="Token", names="Date", title="Total Token Usage")
+
+# Cards for total token, total api requests, and token usage today
+st.write(f"Total Token: {total_token}")
+st.write(f"Total API Requests: {total_requests}")
+st.write(f"Token Used Today: {today_token}")
+st.write(fig)
+st.write(fig2)
+>>>>>>> d659923 (test)

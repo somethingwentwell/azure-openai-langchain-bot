@@ -182,5 +182,19 @@ services:
     volumes:
       - ./streamlit:/app               
 
+  streamlit_aoai_usage_dashboard:
+    image: warching/streamlit
+    command:
+      - /bin/bash
+      - -c
+      - |
+          streamlit run aoai_usage_dashboard.py --server.port=8506 --server.address=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8506:8506"
+    volumes:
+      - ./streamlit:/app       
+
 networks:
   langchain-network:
