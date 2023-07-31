@@ -65,7 +65,7 @@ def pdf_to_images(pdf_data):
     return images  
 
 def create_app(appname, description, stored_inputs, stored_outputs, additional_requirements):
-    f = open(f"./pages/9_📲_{appname}.py", "w")
+    f = open(f"./pages/9_📲_App_-{appname}.py", "w")
     f.write(template.format(stored_inputs=stored_inputs, stored_outputs=stored_outputs, additional_requirements=additional_requirements, appname=appname, description=description))
     f.close()
 

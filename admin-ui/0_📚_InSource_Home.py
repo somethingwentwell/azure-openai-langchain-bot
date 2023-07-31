@@ -25,6 +25,8 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import plotly.express as px  
 import os
+import requests
+import json
 from pages.utils.style import add_style 
 
 add_style()
@@ -46,8 +48,8 @@ def fetch_data(query):
     return df  
 
 def fetch_message_store():  
-    query = "SELECT * FROM message_store"  
-    return fetch_data(query)  
+    query = "SELECT message FROM message_store ORDER BY id DESC LIMIT 100"  
+    return fetch_data(query)
 
 def extract_messages(df):  
     messages = []  
@@ -77,6 +79,18 @@ def daily_token_usage_per_month():
     """  
     return fetch_data(query)  
 
+def daily_request_per_month():  
+    query = """  
+    SELECT  
+        date_trunc('month', timestamp) AS month,  
+        date_trunc('day', timestamp) AS day,  
+        COUNT(*) AS daily_request  
+    FROM token_count  
+    GROUP BY month, day  
+    ORDER BY month, day  
+    """  
+    return fetch_data(query) 
+
 def top_10_token_usage_id_per_month():  
     query = """  
     SELECT   
@@ -90,33 +104,75 @@ def top_10_token_usage_id_per_month():
     """  
     return fetch_data(query)  
 
-st.title('InSource Dashboard') 
-df = fetch_message_store()  
-st.subheader('Word Cloud of Messages')  
-messages = extract_messages(df)  
-wordcloud = WordCloud(width=1920, height=400, background_color='white').generate(messages) 
-plt.imshow(wordcloud, interpolation='bilinear')  
-plt.axis("off")  
-st.pyplot(plt.gcf())  
+def query_adminapi_all_token_used(range_type):
+    API_ENDPOINT = "http://insource-test-015.southeastasia.cloudapp.azure.com:8100/all_token_used/"
+    response = requests.get(API_ENDPOINT + range_type)
+    data = json.loads(response.text)
+    return data
 
-col1, col2 = st.columns([1, 1])
+st.subheader('| TOKEN USAGE')
 
+col1, col2, col3, col4 = st.columns(4)
+# column 1
 with col1:
-    # st.subheader("Daily Token Usage per Month Chart")  
-    daily_token_usage_df = daily_token_usage_per_month()  
-    if not daily_token_usage_df.empty:  
-        daily_token_usage_chart = px.line(  
+    range_type = "year"
+    year_total = query_adminapi_all_token_used(range_type)["all_token_used"]
+    st.title(year_total)
+    st.text('THIS YEAR')
+# column 2
+with col2:
+    range_type = "month"
+    month_total = query_adminapi_all_token_used(range_type)["all_token_used"]
+    st.title(month_total)
+    st.text('THIS MONTH')
+# column 3
+with col3:
+    range_type = "day"
+    today_total = query_adminapi_all_token_used(range_type)["all_token_used"]
+    st.title(today_total)
+    st.text('TODAY')
+# column 4
+with col4:
+    st.title(55)
+    st.text('CLIENTS')
+
+daily_token_usage_df = daily_token_usage_per_month()  
+daily_request_df = daily_request_per_month()
+chart_data = pd.merge(daily_token_usage_df, daily_request_df, on="day")
+if not daily_token_usage_df.empty: 
+    col1, col2 = st.columns((1,1)) 
+    with col1: 
+        st.subheader('| DAILY TOKEN USAGE')
+        st.line_chart(  
             daily_token_usage_df,  
             x="day",  
-            y="daily_token_usage",  
-            color="month",  
-            title="Daily Token Usage per Month",  
-            labels={"month": "Month", "day": "Day"},  
+            y="daily_token_usage",
+            use_container_width = True  
         )  
-        st.plotly_chart(daily_token_usage_chart)  
+    with col2: 
+        st.subheader('| DAILY REQUEST')   
+        st.line_chart(  
+            daily_request_df,  
+            x="day",  
+            y="daily_request",  
+            use_container_width = True 
+        )  
+else:  
+    st.warning("No data found for daily token usage per month") 
+
+col1, col2, col3 = st.columns((1,1,1))  
+
+with col1: 
+    st.subheader("Top 10 Token Usage ID per Month")
+    top_10_token_usage_df = top_10_token_usage_id_per_month()  
+    if not top_10_token_usage_df.empty:  
+        # Create a pie chart
+        fig, ax = plt.subplots()
+        ax.pie(top_10_token_usage_df['monthly_token_usage'], labels=top_10_token_usage_df['session_id'], autopct='%1.1f%%')
+        ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+        st.pyplot(fig)
     else:  
-        st.warning("No data found for daily token usage per month") 
- 
+        st.warning("No data found for top 10 token usage id per month")
 with col2:
     st.subheader("Top 10 Token Usage ID per Month Table")  
     top_10_token_usage_df = top_10_token_usage_id_per_month()  
@@ -124,3 +180,12 @@ with col2:
         st.write(top_10_token_usage_df)  
     else:  
         st.warning("No data found for top 10 token usage id per month") 
+
+with col3:
+    df = fetch_message_store()
+    st.subheader('Word Cloud of Messages')     
+    messages = extract_messages(df)  
+    wordcloud = WordCloud(width=800, height=600, background_color='white').generate(messages) 
+    plt.imshow(wordcloud, interpolation='bilinear')  
+    plt.axis("off")  
+    st.pyplot(plt.gcf())

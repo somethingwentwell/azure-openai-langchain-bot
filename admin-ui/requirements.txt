@@ -8,3 +8,6 @@ matplotlib
 plotly
 openapi-spec-validator  
 pymupdf
+openpyxl
+openapi
+python-pptx

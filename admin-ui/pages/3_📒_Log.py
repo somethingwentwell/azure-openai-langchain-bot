@@ -24,7 +24,7 @@ def get_session_ids(conn):
   
 # Function to fetch chat history by session_id  
 def get_agent_log(session_id, conn):  
-    query = f"SELECT * FROM agent_log WHERE session_id = '{session_id}';"  
+    query = f"SELECT id, session_id, user_q, callback_type, CAST(log AS TEXT) FROM agent_log WHERE session_id = '{session_id}';"  
     df = pd.read_sql_query(query, conn)  
     return df  
   
@@ -43,5 +43,5 @@ def main():
   
     conn.close()  
   
-if __name__ == "__main__":  
-    main()  
+if __name__ == "__main__":      main()
+

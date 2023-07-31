@@ -17,6 +17,7 @@ from tools.direct_gpt import aoai, async_aoai
 from tools.azure_openai_functions import json_output
 from agents.simple_memory_agent import SimpleMemoryAgent
 from features.token_handler import log_token, get_token, get_total_tokens
+from tools.custom_model_api import custom_api_call
 
 
 #from tools.duckduckgo_search import duckduckgo_search
@@ -25,7 +26,7 @@ from features.token_handler import log_token, get_token, get_total_tokens
 #from tools.azure_cognitive_services import azure_cognitive_services
 
 # IMPORT TOOL START
-#from tools.bing_search import bing_search
+from tools.bing_search import bing_search
 #from tools.shell import shell
 #from tools.document_import import document_import
 #from tools.chatgpt_plugins import chatgpt_plugins
@@ -61,7 +62,7 @@ azchat=AzureChatOpenAI(
 #tools.extend(azure_cognitive_services())
 
 # ADD TOOL START 
-#tools.extend(bing_search())
+tools.extend(bing_search())
 #tools.extend(shell())
 #tools.extend(document_import(azchat))
 #tools.extend(chatgpt_plugins())
@@ -75,20 +76,36 @@ azchat=AzureChatOpenAI(
 tool_names = [tool.name for tool in tools]
 
 agent_type_str = str(os.getenv("AGENT_TYPE"))
-agent_type = {
-    "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-    "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    "OPENAI_FUNCTIONS": AgentType.OPENAI_FUNCTIONS,
-    "OPENAI_MULTI_FUNCTIONS": AgentType.OPENAI_MULTI_FUNCTIONS,
-    "DIRECT_GPT": "direct_gpt",
-    "CUSTOM_AGENT": "custom_agent",
-    "AOAI_FUNCTIONS": "aoai_functions",
-}.get(agent_type_str, None)
+
+def get_agent_type(agent_type_str):
+    return {
+        "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+        "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        "OPENAI_FUNCTIONS": AgentType.OPENAI_FUNCTIONS,
+        "OPENAI_MULTI_FUNCTIONS": AgentType.OPENAI_MULTI_FUNCTIONS,
+        "DIRECT_GPT": "direct_gpt",
+        "CUSTOM_AGENT": "custom_agent",
+        "AOAI_FUNCTIONS": "aoai_functions",
+        "CUSTOM_LLM": "custom_llm",
+    }.get(agent_type_str, None)
+
+agent_type = get_agent_type(agent_type_str)
+# agent_type = {
+#     "CHAT_CONVERSATIONAL_REACT_DESCRIPTION": AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+#     "CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+#     "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION": AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+#     "OPENAI_FUNCTIONS": AgentType.OPENAI_FUNCTIONS,
+#     "OPENAI_MULTI_FUNCTIONS": AgentType.OPENAI_MULTI_FUNCTIONS,
+#     "DIRECT_GPT": "direct_gpt",
+#     "CUSTOM_AGENT": "custom_agent",
+#     "AOAI_FUNCTIONS": "aoai_functions",
+#     "CUSTOM_LLM": "custom_llm",
+# }.get(agent_type_str, None)
 if agent_type is None:
     raise ValueError(f"Invalid agent type: {agent_type_str}")
 
-def SetupChatAgent(id, agent_type, callbacks):
+def SetupChatAgent(id, agent_type_str, callbacks):
     postgresUser = str(os.getenv("POSTGRES_USER"))
     postgresPassword = str(os.getenv("POSTGRES_PASSWORD"))
     postgresHost = str(os.getenv("POSTGRES_HOST"))
@@ -96,7 +113,7 @@ def SetupChatAgent(id, agent_type, callbacks):
     history[id] = PostgresChatMessageHistory(
         connection_string=f"postgresql://{postgresUser}:{postgresPassword}@{postgresHost}:{postgresPort}/chat_history", 
         session_id=str(id))
-    if (agent_type == "CUSTOM_AGENT"):
+    if (agent_type_str == "CUSTOM_AGENT"):
         memories[id] = ConversationSummaryBufferMemory(
             llm=azchat, 
             max_token_limit=2500, 
@@ -112,11 +129,11 @@ def SetupChatAgent(id, agent_type, callbacks):
             callbacks=callbacks,
             verbose=True, 
             handle_parsing_errors=True)
-    if (agent_type == "OPENAI_FUNCTIONS" or agent_type == "OPENAI_MULTI_FUNCTIONS"):
+    if (agent_type_str == "OPENAI_FUNCTIONS" or agent_type_str == "OPENAI_MULTI_FUNCTIONS"):
         agent_chains[id] = initialize_agent(tools, azchat, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
-    if (agent_type == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
-        agent_type == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
-        agent_type == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
+    if (agent_type_str == "CHAT_CONVERSATIONAL_REACT_DESCRIPTION" or 
+        agent_type_str == "CHAT_ZERO_SHOT_REACT_DESCRIPTION" or
+        agent_type_str == "STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION"):
         memories[id] = ConversationSummaryBufferMemory(
             llm=azchat, 
             max_token_limit=2500, 
@@ -125,7 +142,7 @@ def SetupChatAgent(id, agent_type, callbacks):
         agent_chains[id] = initialize_agent(
             tools,
             azchat, 
-            agent=agent_type,
+            agent=get_agent_type(agent_type_str),
             verbose=True, 
             memory=memories[id], 
             handle_parsing_errors=True,
@@ -171,6 +188,10 @@ async def run(msg: MessageReq):
                 response_json = json_output(msg.text)
                 response = response_json["content"]
                 total_tokens = response_json["total_tokens"]
+            elif (msg.agent_type == "CUSTOM_LLM"):
+                response_json = custom_api_call(msg.text)
+                response = response_json["content"]
+                total_tokens = response_json["total_tokens"]
             elif (msg.agent_type == "CUSTOM_AGENT" or msg.agent_type == "OPENAI_FUNCTIONS" or msg.agent_type == "OPENAI_MULTI_FUNCTIONS"):
                 response = agent_chains[msg.id].run(input=msg.text)
                 total_tokens = cb.total_tokens
@@ -190,6 +211,49 @@ async def run(msg: MessageReq):
     history[msg.id].add_ai_message(response)
     result = MessageRes(result=response)
     return result
+
+# @app.post("/run")
+# async def run(msg: MessageReq):
+#     if (msg.id not in agent_chains):
+#         SetupChatAgent(msg.id, msg.agent_type, [CustomHandler(session_id=msg.id, user_q=msg.text)])
+#     try:
+#         total_tokens = 0
+#         with get_openai_callback() as cb:
+#             if (msg.agent_type == "DIRECT_GPT"):
+#                 response_json = aoai(msg.text)
+#                 response = response_json["content"]
+#                 total_tokens = response_json["total_tokens"]
+#             elif (msg.agent_type == "AOAI_FUNCTIONS"):
+#                 response_json = json_output(msg.text)
+#                 response = response_json["content"]
+#                 total_tokens = response_json["total_tokens"]
+#             elif (msg.agent_type == "CUSTOM_LLM"):
+#                 response_json = custom_api_call(msg.text)
+#                 response = response_json["content"]
+#                 total_tokens = response_json["total_tokens"]
+#             elif (msg.agent_type == "CUSTOM_AGENT" or msg.agent_type == "OPENAI_FUNCTIONS" or msg.agent_type == "OPENAI_MULTI_FUNCTIONS"):
+#                 coro = agent_chains[msg.id].run(input=msg.text)
+#                 response = await asyncio.wait_for(coro, timeout=10)
+#                 total_tokens = cb.total_tokens
+#             else:
+#                 coro = agent_chains[msg.id].run(input="Your setting: " + str(os.getenv("CHAT_SYSTEM_PROMPT")) + "\nMe: " + msg.text + "\n")
+#                 response = await asyncio.wait_for(coro, timeout=10)
+#                 total_tokens = cb.total_tokens
+#                 print("------MEMORY ID: " + msg.id + "-----")
+#                 if (agent_chains[msg.id].memory.llm.get_num_tokens_from_messages(agent_chains[msg.id].memory.buffer) > 2000):
+#                     clearMemory(msg.id)
+#                 print("Conversation History: ")
+#                 print(agent_chains[msg.id].memory.buffer)
+#                 print("------END OF MEMORY （" + str(len(agent_chains[msg.id].memory.buffer)) + ")-----")
+#         log_token(msg.id, int(total_tokens), datetime.datetime.now())
+#     except asyncio.TimeoutError:
+#         response = "Sorry, the request timed out."
+#     except Exception as e:
+#         response = str(e)
+#     history[msg.id].add_user_message(msg.text)
+#     history[msg.id].add_ai_message(response)
+#     result = MessageRes(result=response)
+#     return result
 
 @app.post("/limit_run")
 async def limit_run(msg: MessageReq):
@@ -213,6 +277,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 total_tokens = 0
                 with get_openai_callback() as cb:
                     msg = await websocket.receive_json()
+                    print(msg)
                     msg = MessageReq(**msg)
 
                     if (msg.id not in agent_chains):
@@ -272,4 +337,4 @@ def get_tools():
 
 
 
-# RESTART: fe57a4dc-6f4a-479e-916d-ff7a74b137cb
+# RESTART: 739120cb-ee3d-4938-8c2c-5c01359b5e17

@@ -52,13 +52,13 @@ def display_chat_history(chat_history):
   
 # Main Streamlit app  
 def main():  
-    st.sidebar.title("Chat History")  
+    st.sidebar.title("History")  
   
     conn = connect_to_db()  
     session_ids = get_session_ids(conn)  
     selected_session_id = st.sidebar.selectbox("Select session_id", session_ids)  
   
-    st.title(f"Chat History for session_id: {selected_session_id}")  
+    st.title(f"History for session_id: {selected_session_id}")  
   
     chat_history = get_chat_history(selected_session_id, conn)  
     display_chat_history(chat_history)  
